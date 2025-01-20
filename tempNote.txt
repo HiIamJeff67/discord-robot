@@ -1,0 +1,5 @@
+Bot invite Url template : https://discord.com/api/oauth2/authorize?client_id={APPLICATION_ID}&permissions={PERMISSIONS_INTEGER}&scope=bot%20applications.commands
+# choose the permissions you want to use, then the developer panel will generate the permission integer for it
+
+https://discord.com/api/oauth2/authorize?client_id=1330870311272321044&permissions=8&scope=bot%20applications.commands
+

@@ -1,0 +1,18 @@
+import discord
+from discord import app_commands
+from discord.ext import commands
+
+class {class_name_placeholder}Cog(commands.Cog):
+    def __init__(self, bot):
+        self.bot = bot
+
+    @commands.Cog.listener()
+    async def on_ready(self):
+        print("Cog of {class_name_placeholder} is loaded successfully --- ✅")
+
+    @app_commands.command(name="{init_command_name_placeholder}", description="")
+    async def {init_command_name_placeholder}(self, interaction: discord.Interaction):
+        pass
+
+async def setup(bot):
+    await bot.add_cog({class_name_placeholder}(bot))

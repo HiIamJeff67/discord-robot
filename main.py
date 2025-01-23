@@ -5,22 +5,29 @@ import discord
 from discord.ext import commands
 
 load_dotenv()
-
+intents = discord.Intents.default()
+intents.message_content = True
 bot = commands.Bot(command_prefix='.', intents=discord.Intents.all())
 
 @bot.event
 async def on_ready():
+    try:
+        synced_commands = await bot.tree.sync()
+        print(f"Synced {len(synced_commands)} commands")
+    except Exception as error:
+        print(f"An unexcpeted error occurred while syncing application commands: {error}")
+    
+    print(f"Invite the bot from here: {os.getenv("DISCORD_BOT_INVITE_URL")}")
     print("Jyuna is ready...")
     
-@bot.command(name="hello")
-async def hello(ctx):
-    await ctx.send(f"Hello there, {ctx.author.mention}")
-    
-@bot.command(name="getLatency")
-async def getLatency(ctx):
-    latency_embed = discord.Embed(title="Latency", description="Latency in ms", color=discord.Color.blue())
-    latency_embed.add_field(name=f"{bot.user.name}'s latency(ms):", value=f"{round(bot.latency * 1000)} ms", inline=True)
-    latency_embed.set_footer(text=f"Requested by {ctx.author.name}", icon_url=ctx.author.avatar)
-    await ctx.send(embed=latency_embed)
+async def LoadCogs():
+    for fileName in os.listdir("./cogs"):
+        if fileName.endswith(".py") and fileName != "__init__.py":
+            await bot.load_extension(f"cogs.{fileName[:-3]}")
 
-bot.run(os.getenv("DISCORD_BOT_TOKEN"))
+async def main():
+    async with bot:
+        await LoadCogs()
+        await bot.start(os.getenv("DISCORD_BOT_TOKEN"))
+
+asyncio.run(main())

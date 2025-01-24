@@ -11,4 +11,4 @@ class {class_name_placeholder}Cog(commands.Cog):
         print("Cog of {class_name_placeholder} is loaded successfully --- ✅")
 
 async def setup(bot):
-    await bot.add_cog({class_name_placeholder}(bot))
+    await bot.add_cog({class_name_placeholder}Cog(bot))

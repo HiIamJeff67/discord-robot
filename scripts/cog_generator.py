@@ -1,7 +1,7 @@
 import os
 import argparse
 
-from scripts.types.IsSlashCommandTypes import IsSlashCommandType, IsSlashCommandTypes
+from scripts.types.IsSlashCommandType import IsSlashCommandType, IsSlashCommandTypes
 from utils.to_snake_case import to_snake_case
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))   # get the path of current directory

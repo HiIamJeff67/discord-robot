@@ -1,0 +1,1 @@
+LoadingTimeLimitInterval = 0.5  # seconds

@@ -1,3 +1,4 @@
 export * from './length.constant';
 export * from './value.constant';
-export * from './auth.constants';
+export * from './auth.constant';
+export * from './size.constant';

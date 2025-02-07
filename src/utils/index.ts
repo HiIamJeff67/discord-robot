@@ -4,3 +4,5 @@ export * from './toDate';
 export * from './alignString';
 export * from './stringParser';
 export * from './dateCalculator';
+export * from './multerToFile';
+export * from './fileTypeValidator';

@@ -3,12 +3,12 @@ import { ConfigService } from '@nestjs/config';
 import { EnvironmentSupabaseNotFoundException } from '../exceptions/environment.exception';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
-export const SUPABASE = Symbol('supabase-client');
+export const SUPABASECLIENT = Symbol('supabase-client');
 
 @Module({
   providers: [
     {
-      provide: SUPABASE,
+      provide: SUPABASECLIENT,
       inject: [ConfigService],
       useFactory: async (configService: ConfigService) => {
         const supabaseUrl = configService.get<string>('SUPABASE_URL');
@@ -20,5 +20,6 @@ export const SUPABASE = Symbol('supabase-client');
       },
     },
   ],
+  exports: [SUPABASECLIENT],
 })
 export class SupabaseModule {}

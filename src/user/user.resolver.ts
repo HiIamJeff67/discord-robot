@@ -1,5 +1,5 @@
 import { Resolver, Query, Mutation, Args } from '@nestjs/graphql';
-import { UserInfoService } from './user.service';
+import { UserService } from './user.service';
 import { UseGuards } from '@nestjs/common';
 import { JwtAccessGuard, JwtAnyGuard, JwtRefreshGuard } from '../auth/guards';
 import { User } from '../auth/decorators';
@@ -18,16 +18,16 @@ import {
 import { DeleteMeInput } from './dto/delete-user.input';
 
 @Resolver('user-info')
-export class UserInfoResolver {
-  constructor(private readonly userInfoService: UserInfoService) {}
+export class UserResolver {
+  constructor(private readonly userService: UserService) {}
 
   @Query(() => UserInfo)
   @UseGuards(JwtAnyGuard([JwtAccessGuard, JwtRefreshGuard]))
-  async getMe(
+  async getMyInfo(
     @User() user: ValidateTokenDataInterface,
   ): Promise<UserInfo & AccessTokenData> {
     try {
-      const res = await this.userInfoService.getUserInfo(user.id);
+      const res = await this.userService.getUserInfo(user.id);
       if (!res) throw UserNotFoundException;
       return {
         ...res,
@@ -46,7 +46,7 @@ export class UserInfoResolver {
     @User() user: ValidateTokenDataInterface,
   ): Promise<PaginatedUserInfos & AccessTokenData> {
     try {
-      const res = await this.userInfoService.getRelativeUserInfos(input);
+      const res = await this.userService.getRelativeUserInfos(input);
       if (!res) throw UserNotFoundException;
       return {
         ...res,
@@ -60,11 +60,11 @@ export class UserInfoResolver {
 
   @Query(() => UserAuth)
   @UseGuards(JwtAnyGuard([JwtAccessGuard, JwtRefreshGuard]))
-  async getAuth(
+  async getMyAuth(
     @User() user: ValidateTokenDataInterface,
   ): Promise<UserAuth & AccessTokenData> {
     try {
-      const res = await this.userInfoService.getMyAuth(user.id);
+      const res = await this.userService.getMyAuth(user.id);
       if (!res) throw UserNotFoundException;
       return {
         ...res,
@@ -78,7 +78,7 @@ export class UserInfoResolver {
 
   @Query(() => UserAccount)
   @UseGuards(JwtAnyGuard([JwtAccessGuard, JwtRefreshGuard]))
-  async getAccount(
+  async getMyAccount(
     @User() user: ValidateTokenDataInterface,
   ): Promise<UserAccount & AccessTokenData> {
     try {
@@ -103,7 +103,7 @@ export class UserInfoResolver {
     @Args('input') input: UpdateMyInfoInput,
   ): Promise<UserInfo & AccessTokenData> {
     try {
-      const res = await this.userInfoService.updateMyInfo(user.id, input);
+      const res = await this.userService.updateMyInfo(user.id, input);
       return {
         ...res,
         accessToken: user.accessTokenData.accessToken,
@@ -121,7 +121,7 @@ export class UserInfoResolver {
     @Args('input') input: UpdateMyRoleInput,
   ): Promise<UserRole & AccessTokenData> {
     try {
-      const res = await this.userInfoService.updateMyRole(user.id, input);
+      const res = await this.userService.updateMyRole(user.id, input);
       return {
         ...res,
         accessToken: user.accessTokenData.accessToken,
@@ -139,7 +139,7 @@ export class UserInfoResolver {
     @Args('input') input: UpdateMyPlanInput,
   ): Promise<UserPlan & AccessTokenData> {
     try {
-      const res = await this.userInfoService.updateMyPlan(user.id, input);
+      const res = await this.userService.updateMyPlan(user.id, input);
       return {
         ...res,
         accessToken: user.accessTokenData.accessToken,
@@ -157,7 +157,7 @@ export class UserInfoResolver {
     @Args('input') input: DeleteMeInput,
   ): Promise<UserInfo & AccessTokenData> {
     try {
-      const res = await this.userInfoService.deleteMe(user.id, input);
+      const res = await this.userService.deleteMe(user.id, input);
       return {
         ...res,
         accessToken: user.accessTokenData.accessToken,

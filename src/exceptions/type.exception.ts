@@ -1,4 +1,5 @@
 import { NotAcceptableException } from '@nestjs/common';
+import { MimeType } from '../types';
 
 export const TypeUserNameFormException = new NotAcceptableException({
   case: 'E-F-001',
@@ -30,3 +31,12 @@ export const TypeTokenExpiredTimeFormException = new NotAcceptableException({
   case: 'E-Type-006',
   message: 'The form of the expiresIn column is invalid',
 });
+
+export const TypeMimeTypeInvalidException = (
+  mimeType: MimeType,
+  validMimeTypes: MimeType[],
+) =>
+  new NotAcceptableException({
+    case: 'E-Type-007',
+    message: `The given mime type ${mimeType} is invalid, valid mime types: ${validMimeTypes}`,
+  });

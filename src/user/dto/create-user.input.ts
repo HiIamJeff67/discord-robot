@@ -1,5 +1,5 @@
 import { Field, GraphQLISODateTime, InputType } from '@nestjs/graphql';
-import { IsIn, IsUrl, MaxLength, MinLength } from 'class-validator';
+import { IsIn, MaxLength, MinLength } from 'class-validator';
 import {
   MaxDisplayNameLength,
   MaxSelfIntroductionLength,
@@ -20,10 +20,6 @@ export class CreateMyInfoInput {
   @MinLength(MinDisplayNameLength)
   @MaxLength(MaxDisplayNameLength)
   displayName: string;
-
-  @Field(() => String, { nullable: true })
-  @IsUrl()
-  avatarURL?: string | null;
 
   @Field(() => UserStatusEnum)
   @IsIn(UserStatusValues)

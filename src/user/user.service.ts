@@ -2,7 +2,7 @@ import * as bcrypt from 'bcrypt';
 import { Inject, Injectable } from '@nestjs/common';
 import { DRIZZLE } from '../drizzle/drizzle.module';
 import { DrizzleDB } from '../drizzle/types/drizzle';
-import { and, asc, count, desc, eq, gt, like, lt, SQL } from 'drizzle-orm';
+import { and, asc, count, desc, eq, gt, like, SQL } from 'drizzle-orm';
 import { UserInfoTable } from '../drizzle/schema/userInfo.schema';
 import { UserAuthTable } from '../drizzle/schema/userAuth.schema';
 import {
@@ -16,18 +16,14 @@ import {
   AuthPasswordNotMatchException,
   UserNotFoundException,
 } from '../exceptions';
-import {
-  UserGenderType,
-  UserPlanType,
-  UserRoleType,
-  UserStatusType,
-} from '../types';
+import { UserGenderType, UserStatusType } from '../types';
 import { GetRelativeUserInfosInput } from './dto/get-user.input';
 import { SearchOrderEnum } from '../enums';
 import { PaginatedUserInfos, UserInfo } from './models/user-info.model';
 import { DefaultAfterValueForSearch } from '../constants';
 import { UserAuth } from './models/user-auth.model';
 import { UserPlan, UserRole } from './models/user-account.model';
+import { SupabaseStorageService } from '../supabase-storage/supabase-storage.service';
 
 interface GetUserInfoInterface {
   userName: string;
@@ -43,9 +39,13 @@ interface GetUserInfoInterface {
 }
 
 @Injectable()
-export class UserInfoService {
-  constructor(@Inject(DRIZZLE) private readonly db: DrizzleDB) {}
+export class UserService {
+  constructor(
+    private readonly storage: SupabaseStorageService,
+    @Inject(DRIZZLE) private readonly db: DrizzleDB,
+  ) {}
 
+  /* ============================== Get Operations ============================== */
   async getUserInfo(userId: string): Promise<UserInfo | undefined> {
     return (await this.db.query.UserInfoTable.findFirst({
       where: eq(UserInfoTable.userId, userId),
@@ -193,7 +193,9 @@ export class UserInfoService {
       },
     });
   }
+  /* ============================== Get Operations ============================== */
 
+  /* ============================== Update Operations ============================== */
   async updateMyInfo(
     userId: string,
     input: UpdateMyInfoInput,
@@ -202,7 +204,6 @@ export class UserInfoService {
       .update(UserInfoTable)
       .set({
         displayName: input.displayName,
-        avatarURL: input.avatarURL,
         status: input.status,
         gender: input.gender,
         birthDate: input.birthDate,
@@ -222,6 +223,37 @@ export class UserInfoService {
         createdAt: UserInfoTable.createdAt,
       })) as UserInfo[] | undefined;
 
+    if (!response || response.length === 0) {
+      throw UserNotFoundException;
+    }
+
+    return response[0];
+  }
+
+  // only used by controller
+  async updateMyAvatar(
+    userId: string,
+    userName: string,
+    avatarFile: Express.Multer.File,
+  ): Promise<UserInfo> {
+    const response = (await this.db
+      .update(UserInfoTable)
+      .set({
+        avatarURL: await this.storage.uploadAvatarFile(userName, avatarFile),
+      })
+      .where(eq(UserInfoTable.id, userId))
+      .returning({
+        userName: UserInfoTable.userName,
+        displayName: UserInfoTable.displayName,
+        avatarURL: UserInfoTable.avatarURL,
+        status: UserInfoTable.status,
+        inviteCode: UserInfoTable.inviteCode,
+        gender: UserInfoTable.gender,
+        birthDate: UserInfoTable.birthDate,
+        selfIntroduction: UserInfoTable.selfIntroduction,
+        updatedAt: UserInfoTable.updatedAt,
+        createdAt: UserInfoTable.createdAt,
+      })) as UserInfo[] | undefined;
     if (!response || response.length === 0) {
       throw UserNotFoundException;
     }
@@ -270,7 +302,9 @@ export class UserInfoService {
 
     return response[0];
   }
+  /* ============================== Update Operations ============================== */
 
+  /* ============================== Delete Operations ============================== */
   async deleteMe(userId: string, input: DeleteMeInput): Promise<UserInfo> {
     const responseOfSelectingUser = await this.db.query.UserTable.findFirst({
       where: eq(UserTable.id, userId),
@@ -312,4 +346,5 @@ export class UserInfoService {
 
     return responseOfDeletingUser[0];
   }
+  /* ============================== Delete Operations ============================== */
 }

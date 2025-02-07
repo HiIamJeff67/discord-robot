@@ -65,9 +65,9 @@ type PaginatedUserInfos {
 }
 
 type Query {
-  getAccount: UserAccount!
-  getAuth: UserAuth!
-  getMe: UserInfo!
+  getMyAccount: UserAccount!
+  getMyAuth: UserAuth!
+  getMyInfo: UserInfo!
   getUserInfos(input: GetRelativeUserInfosInput!): PaginatedUserInfos!
 }
 
@@ -89,7 +89,6 @@ input SortOptions {
 }
 
 input UpdateMyInfoInput {
-  avatarURL: String
   birthDate: DateTime
   displayName: String
   gender: UserGenderEnum

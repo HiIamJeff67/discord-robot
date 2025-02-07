@@ -8,3 +8,5 @@ export const MinPasswordLength = 8;
 
 export const MinSelfIntroductionLength = 0;
 export const MaxSelfIntroductionLength = 250;
+
+export const MAX_FILE_NAME_LENGTH = 10;

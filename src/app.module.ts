@@ -12,7 +12,8 @@ import { join } from 'path';
 import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter';
 import { AccessTokenCacheModule } from './access-token-cache/access-token-cache.module';
 import { AuthModule } from './auth/auth.module';
-import { UserInfoModule } from './user/user.module';
+import { UserModule } from './user/user.module';
+import { SupabaseModule } from './supabase/supabase.module';
 
 @Module({
   imports: [
@@ -48,7 +49,8 @@ import { UserInfoModule } from './user/user.module';
     SecureGeneratorModule,
     AccessTokenCacheModule,
     AuthModule,
-    UserInfoModule,
+    UserModule,
+    SupabaseModule,
   ],
   controllers: [AppController],
   providers: [AppService],

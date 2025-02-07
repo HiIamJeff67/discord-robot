@@ -7,7 +7,7 @@ import { tokenFormStringToNumberSecond } from '../utils';
 export class CookieService {
   constructor(private configService: ConfigService) {}
 
-  storeRefreshTokenCookie(refreshToken: string, response: Response): Response {
+  storeRefreshTokenCookie(refreshToken: string, response: any): any {
     const isProduction =
       this.configService.get('NODE_ENVIRONMENT') === 'production';
     response.cookie('refreshToken', refreshToken, {
@@ -23,7 +23,9 @@ export class CookieService {
     return response;
   }
 
-  loadRefreshTokenCookie(request: Request): { refreshToken: string } {
+  loadRefreshTokenCookie(request: Request): {
+    refreshToken: string | undefined;
+  } {
     return { refreshToken: request.cookies['refreshToken'] };
   }
 

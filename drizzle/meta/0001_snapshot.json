@@ -1,6 +1,6 @@
 {
-  "id": "24989528-b175-4e3e-8100-e75bad21654a",
-  "prevId": "65aef7f8-becc-4b4d-8eb9-94c317bcda63",
+  "id": "f8df1487-2d1c-4cf4-ae8c-3c71f55b0e12",
+  "prevId": "00e0c33a-fd85-44dd-9a67-0d436525437f",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -185,14 +185,8 @@
           "notNull": true,
           "default": "gen_random_uuid()"
         },
-        "name": {
-          "name": "name",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "displayName": {
-          "name": "displayName",
+        "userName": {
+          "name": "userName",
           "type": "text",
           "primaryKey": false,
           "notNull": true
@@ -209,12 +203,6 @@
           "primaryKey": false,
           "notNull": true
         },
-        "avatarURL": {
-          "name": "avatarURL",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
         "role": {
           "name": "role",
           "type": "userRole",
@@ -223,13 +211,25 @@
           "notNull": true,
           "default": "'NonCertified'"
         },
-        "status": {
-          "name": "status",
-          "type": "userStatus",
+        "plan": {
+          "name": "plan",
+          "type": "userPlan",
           "typeSchema": "public",
           "primaryKey": false,
           "notNull": true,
-          "default": "'Online'"
+          "default": "'Free'"
+        },
+        "refreshToken": {
+          "name": "refreshToken",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "userAgent": {
+          "name": "userAgent",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
         }
       },
       "indexes": {
@@ -237,28 +237,13 @@
           "name": "user_userNameIndex",
           "columns": [
             {
-              "expression": "name",
+              "expression": "userName",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
             }
           ],
           "isUnique": true,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "user_displayNameIndex": {
-          "name": "user_displayNameIndex",
-          "columns": [
-            {
-              "expression": "displayName",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
           "concurrently": false,
           "method": "btree",
           "with": {}
@@ -293,11 +278,26 @@
           "method": "btree",
           "with": {}
         },
-        "user_statusIndex": {
-          "name": "user_statusIndex",
+        "user_planIndex": {
+          "name": "user_planIndex",
           "columns": [
             {
-              "expression": "status",
+              "expression": "plan",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "user_userAgentIndex": {
+          "name": "user_userAgentIndex",
+          "columns": [
+            {
+              "expression": "userAgent",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -312,11 +312,11 @@
       "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
-        "user_name_unique": {
-          "name": "user_name_unique",
+        "user_userName_unique": {
+          "name": "user_userName_unique",
           "nullsNotDistinct": false,
           "columns": [
-            "name"
+            "userName"
           ]
         },
         "user_email_unique": {
@@ -640,6 +640,38 @@
           "primaryKey": false,
           "notNull": true
         },
+        "userName": {
+          "name": "userName",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "displayName": {
+          "name": "displayName",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "inviteCode": {
+          "name": "inviteCode",
+          "type": "serial",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "avatarURL": {
+          "name": "avatarURL",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "status": {
+          "name": "status",
+          "type": "userStatus",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'Online'"
+        },
         "gender": {
           "name": "gender",
           "type": "userGender",
@@ -647,14 +679,6 @@
           "primaryKey": false,
           "notNull": true,
           "default": "'PreferNotToSay'"
-        },
-        "plan": {
-          "name": "plan",
-          "type": "userPlan",
-          "typeSchema": "public",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "'Free'"
         },
         "birthDate": {
           "name": "birthDate",
@@ -699,11 +723,56 @@
           "method": "btree",
           "with": {}
         },
-        "userInfo_planIndex": {
-          "name": "userInfo_planIndex",
+        "userInfo_userNameIndex": {
+          "name": "userInfo_userNameIndex",
           "columns": [
             {
-              "expression": "plan",
+              "expression": "userName",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "userInfo_displayNameIndex": {
+          "name": "userInfo_displayNameIndex",
+          "columns": [
+            {
+              "expression": "displayName",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "userInfo_inviteCodeIndex": {
+          "name": "userInfo_inviteCodeIndex",
+          "columns": [
+            {
+              "expression": "inviteCode",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "userInfo_statusIndex": {
+          "name": "userInfo_statusIndex",
+          "columns": [
+            {
+              "expression": "status",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -773,6 +842,19 @@
           ],
           "onDelete": "cascade",
           "onUpdate": "no action"
+        },
+        "userInfo_userName_user_userName_fk": {
+          "name": "userInfo_userName_user_userName_fk",
+          "tableFrom": "userInfo",
+          "tableTo": "user",
+          "columnsFrom": [
+            "userName"
+          ],
+          "columnsTo": [
+            "userName"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
         }
       },
       "compositePrimaryKeys": {},
@@ -782,6 +864,20 @@
           "nullsNotDistinct": false,
           "columns": [
             "userId"
+          ]
+        },
+        "userInfo_userName_unique": {
+          "name": "userInfo_userName_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "userName"
+          ]
+        },
+        "userInfo_inviteCode_unique": {
+          "name": "userInfo_inviteCode_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "inviteCode"
           ]
         }
       },
@@ -879,190 +975,6 @@
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false
-    },
-    "public.userToken": {
-      "name": "userToken",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "uuid",
-          "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
-        },
-        "userId": {
-          "name": "userId",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "accessToken": {
-          "name": "accessToken",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "refreshToken": {
-          "name": "refreshToken",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "userAgent": {
-          "name": "userAgent",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "expiredAt": {
-          "name": "expiredAt",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "updatedAt": {
-          "name": "updatedAt",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        }
-      },
-      "indexes": {
-        "userToken_userIdIndex": {
-          "name": "userToken_userIdIndex",
-          "columns": [
-            {
-              "expression": "userId",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": true,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "userToken_accessTokenIndex": {
-          "name": "userToken_accessTokenIndex",
-          "columns": [
-            {
-              "expression": "accessToken",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": true,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "userToken_refreshTokenIndex": {
-          "name": "userToken_refreshTokenIndex",
-          "columns": [
-            {
-              "expression": "refreshToken",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": true,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "userToken_userAgentIndex": {
-          "name": "userToken_userAgentIndex",
-          "columns": [
-            {
-              "expression": "userAgent",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "userToken_expiredAtIndex": {
-          "name": "userToken_expiredAtIndex",
-          "columns": [
-            {
-              "expression": "expiredAt",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "userToken_updatedAtIndex": {
-          "name": "userToken_updatedAtIndex",
-          "columns": [
-            {
-              "expression": "updatedAt",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
-      "foreignKeys": {
-        "userToken_userId_user_id_fk": {
-          "name": "userToken_userId_user_id_fk",
-          "tableFrom": "userToken",
-          "tableTo": "user",
-          "columnsFrom": [
-            "userId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {
-        "userToken_userId_unique": {
-          "name": "userToken_userId_unique",
-          "nullsNotDistinct": false,
-          "columns": [
-            "userId"
-          ]
-        },
-        "userToken_accessToken_unique": {
-          "name": "userToken_accessToken_unique",
-          "nullsNotDistinct": false,
-          "columns": [
-            "accessToken"
-          ]
-        },
-        "userToken_refreshToken_unique": {
-          "name": "userToken_refreshToken_unique",
-          "nullsNotDistinct": false,
-          "columns": [
-            "refreshToken"
-          ]
-        }
-      },
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
     }
   },
   "enums": {
@@ -1103,6 +1015,7 @@
         "AlphaExplorer",
         "BetaExplorer",
         "GammaExplorer",
+        "Developer",
         "Admin"
       ]
     },

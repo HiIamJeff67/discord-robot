@@ -3,16 +3,16 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { DrizzleModule } from './drizzle/drizzle.module';
 import { ConfigModule } from '@nestjs/config';
-import { TrpcModule } from './trpc/trpc.module';
 import { CookieModule } from './cookie/cookie.module';
-import { AuthModule } from './auth/auth.module';
 import { SecureGeneratorModule } from './secret-generator/secret-generator.module';
 import { MailerModule } from '@nestjs-modules/mailer';
+import { GraphQLModule } from '@nestjs/graphql';
+import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 import { join } from 'path';
 import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter';
-import { SessionModule } from './session/session.module';
 import { AccessTokenCacheModule } from './access-token-cache/access-token-cache.module';
-import { UserInfoModule } from './user-info/user-info.module';
+import { AuthModule } from './auth/auth.module';
+import { UserInfoModule } from './user/user.module';
 
 @Module({
   imports: [
@@ -32,13 +32,22 @@ import { UserInfoModule } from './user-info/user-info.module';
         adapter: new HandlebarsAdapter(),
       },
     }),
-    TrpcModule,
+    GraphQLModule.forRoot<ApolloDriverConfig>({
+      driver: ApolloDriver,
+      autoSchemaFile: join(process.cwd(), 'src/@generated/schema.gql'),
+      sortSchema: true,
+      context: ({ req, res }) => ({ req, res }),
+      playground: {
+        settings: {
+          'request.credentials': 'include',
+        },
+      },
+    }),
     DrizzleModule,
     CookieModule,
     SecureGeneratorModule,
-    AuthModule,
-    SessionModule,
     AccessTokenCacheModule,
+    AuthModule,
     UserInfoModule,
   ],
   controllers: [AppController],

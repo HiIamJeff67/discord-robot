@@ -1,0 +1,182 @@
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
+
+"""
+A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
+"""
+scalar DateTime
+
+input DefaultLoginInput {
+  account: String!
+  password: String!
+}
+
+type DefaultLoginOutput {
+  accessToken: String!
+  expiresIn: String!
+}
+
+input DefaultRegisterInput {
+  displayName: String!
+  email: String!
+  password: String!
+  userName: String!
+}
+
+type DefaultRegisterOutput {
+  accessToken: String!
+  expiresIn: String!
+}
+
+input DeleteMeInput {
+  password: String!
+}
+
+input FilterOptions {
+  gender: UserGenderEnum
+  status: UserStatusEnum
+}
+
+input GetRelativeUserInfosInput {
+  after: String! = "00000000-0000-0000-0000-000000000000"
+  filterOptions: FilterOptions
+  first: Int! = 10
+  searchInput: String
+  searchInputType: SearchUserInputEnum! = ByDisplayName
+  sortOptions: SortOptions
+  totCount: Int
+}
+
+type Mutation {
+  defaultLogin(input: DefaultLoginInput!): DefaultLoginOutput!
+  defaultRegister(input: DefaultRegisterInput!): DefaultRegisterOutput!
+  deleteMe(input: DeleteMeInput!): UserInfo!
+  updateMyInfo(input: UpdateMyInfoInput!): UserInfo!
+  updateMyPlan(input: UpdateMyPlanInput!): UserPlan!
+  updateMyRole(input: UpdateMyRoleInput!): UserRole!
+}
+
+type PaginatedUserInfos {
+  edges: [UserInfoEdge!]
+  hasNextPage: Boolean!
+  hasPrevPage: Boolean!
+  totalCount: Int!
+}
+
+type Query {
+  getAccount: UserAccount!
+  getAuth: UserAuth!
+  getMe: UserInfo!
+  getUserInfos(input: GetRelativeUserInfosInput!): PaginatedUserInfos!
+}
+
+enum SearchOrderEnum {
+  Ascending
+  Descending
+  None
+}
+
+enum SearchUserInputEnum {
+  ByDisplayName
+  ByInviteCode
+  ByUserName
+}
+
+input SortOptions {
+  byCreatedAt: SearchOrderEnum! = None
+  byUpdatedAt: SearchOrderEnum! = Descending
+}
+
+input UpdateMyInfoInput {
+  avatarURL: String
+  birthDate: DateTime
+  displayName: String
+  gender: UserGenderEnum
+  selfIntroduction: String
+  status: UserStatusEnum
+}
+
+input UpdateMyPlanInput {
+  plan: UserPlanEnum!
+}
+
+input UpdateMyRoleInput {
+  role: UserRoleEnum!
+}
+
+type UserAccount {
+  email: String!
+  plan: UserPlanEnum!
+  role: UserRoleEnum!
+  userAgent: String!
+  userName: String!
+}
+
+type UserAuth {
+  discordId: String
+  googleId: String
+  lineId: String
+  metaId: String
+  phoneNumber: String
+  redditId: String
+  spotifyId: String
+  twitchId: String
+  updatedAt: DateTime!
+}
+
+enum UserGenderEnum {
+  Female
+  Male
+  PreferNotToSay
+}
+
+type UserInfo {
+  avatarURL: String
+  birthDate: DateTime
+  createdAt: DateTime!
+  displayName: String!
+  gender: UserGenderEnum!
+  inviteCode: Int!
+  selfIntroduction: String
+  status: UserStatusEnum!
+  updatedAt: DateTime!
+  userName: String!
+}
+
+type UserInfoEdge {
+  cursor: String!
+  node: UserInfo!
+}
+
+type UserPlan {
+  plan: UserPlanEnum!
+}
+
+enum UserPlanEnum {
+  Enterprise
+  Free
+  Pro
+  Ultimate
+}
+
+type UserRole {
+  role: UserRoleEnum!
+}
+
+enum UserRoleEnum {
+  Admin
+  AlphaExplorer
+  BetaExplorer
+  Certified
+  Developer
+  GammaExplorer
+  NonCertified
+}
+
+enum UserStatusEnum {
+  AFK
+  DoNotDisturb
+  Offline
+  Online
+}

@@ -1,6 +1,14 @@
-import { ValidateTokenDataInterface } from './auth.interface';
+import { UserPlanType, UserRoleType } from '../types';
 
-export interface AccessTokenCacheDataInterface
-  extends ValidateTokenDataInterface {
+export interface SetAccessTokenCacheInterface {
+  id: string;
+  userName: string;
+  email: string;
+  userAgent: string;
+  role: UserRoleType;
+  plan: UserPlanType;
+}
+
+export interface CacheUserInterface extends SetAccessTokenCacheInterface {
   expiresIn: string;
 }

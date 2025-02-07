@@ -1,12 +1,5 @@
-import {
-  boolean,
-  index,
-  pgTable,
-  text,
-  uniqueIndex,
-  uuid,
-} from 'drizzle-orm/pg-core';
-import { UserPlanEnum, UserRoleEnum, UserStatusEnum } from './enum.schema';
+import { index, pgTable, text, uniqueIndex, uuid } from 'drizzle-orm/pg-core';
+import { UserPlanEnum, UserRoleEnum } from './enum.schema';
 import { relations } from 'drizzle-orm';
 import { UserInfoTable } from './userInfo.schema';
 import { UserAuthTable } from './userAuth.schema';
@@ -16,14 +9,13 @@ export const UserTable = pgTable(
   'user',
   {
     id: uuid('id').primaryKey().defaultRandom(),
-    userName: text('name').unique().notNull(),
+    userName: text('userName').unique().notNull(),
     email: text('email').unique().notNull(),
     password: text('password').notNull(),
     role: UserRoleEnum('role').notNull().default('NonCertified'),
     plan: UserPlanEnum('plan').notNull().default('Free'),
     refreshToken: text('refreshToken').notNull(),
     userAgent: text('userAgent').notNull(),
-    status: UserStatusEnum('status').notNull().default('Online'),
   },
   (table) => {
     return {
@@ -32,7 +24,6 @@ export const UserTable = pgTable(
       roleIndex: index('user_roleIndex').on(table.role),
       planIndex: index('user_planIndex').on(table.plan),
       userAgentIndex: index('user_userAgentIndex').on(table.userAgent),
-      statusIndex: index('user_statusIndex').on(table.status),
     };
   },
 );

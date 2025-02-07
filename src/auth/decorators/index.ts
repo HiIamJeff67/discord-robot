@@ -1,2 +1,1 @@
-export * from './allowed-role.decorator';
-export * from './allowed-plan.decorator';
+export * from './user.decorator';

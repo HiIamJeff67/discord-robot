@@ -7,41 +7,25 @@
  */
 
 import { pgEnum } from 'drizzle-orm/pg-core';
+import {
+  NotificationValues,
+  UserGenderValues,
+  UserPlanValues,
+  UserRoleValues,
+  UserStatusValues,
+} from '../../types';
 
 /* ================================= Status Enums ================================= */
-export const UserStatusEnum = pgEnum('userStatus', [
-  'Online',
-  'Offline',
-  'AFK',
-  'DoNotDisturb',
-]);
+export const UserStatusEnum = pgEnum('userStatus', UserStatusValues);
 
-export const UserGenderEnum = pgEnum('userGender', [
-  'Male',
-  'Female',
-  'PreferNotToSay',
-]);
+export const UserGenderEnum = pgEnum('userGender', UserGenderValues);
 
-export const UserRoleEnum = pgEnum('userRole', [
-  'NonCertified', // for user without the email authorization
-  'Certified', // for normal user
-  'AlphaExplorer', // for inner test staffs, on stage 1
-  'BetaExplorer', // for open test members, on stage 2
-  'GammaExplorer', // for well-open test users, on stage 3
-  'Developer',
-  'Admin',
-]);
+export const UserRoleEnum = pgEnum('userRole', UserRoleValues);
 
-export const UserPlanEnum = pgEnum('userPlan', [
-  'Free',
-  'Pro',
-  'Ultimate',
-  'Enterprise',
-]);
+export const UserPlanEnum = pgEnum('userPlan', UserPlanValues);
 
-export const NotificationTypeEnum = pgEnum('notificationType', [
-  'System',
-  'Security',
-  'AD',
-]);
+export const NotificationTypeEnum = pgEnum(
+  'notificationType',
+  NotificationValues,
+);
 /* ================================= Status Enums ================================= */

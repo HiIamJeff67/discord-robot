@@ -1,4 +1,4 @@
-import { UserPlanType, UserRoleType } from '../enums';
+import { UserPlanType, UserRoleType } from '../types';
 
 export interface AccessTokenInterface {
   accessToken: string;
@@ -34,6 +34,7 @@ export interface ValidateTokenDataInterface {
   userName: string;
   email: string;
   userAgent: string;
-  role: UserRoleType;
-  plan: UserPlanType;
+  role: UserRoleType; // re-generate the token while updating the role
+  plan: UserPlanType; // re-generate the token while updating the plan
+  accessTokenData: AccessTokenInterface;
 }

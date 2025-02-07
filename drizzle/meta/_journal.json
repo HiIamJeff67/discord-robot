@@ -5,29 +5,15 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1738077566183,
-      "tag": "0000_glorious_nighthawk",
+      "when": 1738739285597,
+      "tag": "0000_wandering_iron_patriot",
       "breakpoints": true
     },
     {
       "idx": 1,
       "version": "7",
-      "when": 1738127364849,
-      "tag": "0001_wandering_madame_masque",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1738250452642,
-      "tag": "0002_little_maestro",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "7",
-      "when": 1738470471742,
-      "tag": "0003_purple_demogoblin",
+      "when": 1738739702006,
+      "tag": "0001_black_the_phantom",
       "breakpoints": true
     }
   ]

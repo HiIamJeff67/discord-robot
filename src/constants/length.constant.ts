@@ -5,3 +5,6 @@ export const MinDisplayNameLength = 3;
 export const MaxDisplayNameLength = 12;
 
 export const MinPasswordLength = 8;
+
+export const MinSelfIntroductionLength = 0;
+export const MaxSelfIntroductionLength = 250;

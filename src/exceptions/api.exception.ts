@@ -3,14 +3,19 @@ import {
   InternalServerErrorException,
 } from '@nestjs/common';
 
-export const ApiGenerateAccessTokenException = new ForbiddenException({
+export const ApiRefreshAccessTokenException = new ForbiddenException({
   case: 'E-A-100',
-  message: 'Failed to generate an access token',
+  message: 'Failed to refresh the access token',
 });
 
-export const ApiGenerateRefreshTokenException = new ForbiddenException({
+export const ApiWithoutCookieException = new ForbiddenException({
   case: 'E-A-101',
-  message: 'Failed to generate a refresh token',
+  message: 'The request or response does not have any cookies',
+});
+
+export const ApiKeyNotFoundInCookieException = new ForbiddenException({
+  case: 'E-A-102',
+  message: 'Cannot find any data with the given key in the cookies',
 });
 
 export const ApiISOStringFormException = new InternalServerErrorException({

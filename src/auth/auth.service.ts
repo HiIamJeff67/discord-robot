@@ -3,7 +3,6 @@ import { Inject, Injectable } from '@nestjs/common';
 import { DRIZZLE } from '../drizzle/drizzle.module';
 import { DrizzleDB } from '../drizzle/types/drizzle';
 import { ConfigService } from '@nestjs/config';
-import { RegisterInputType, LoginInputType } from './auth.schema';
 import { SecureGeneratorService } from '../secret-generator/secret-generator.service';
 import { UserTable } from '../drizzle/schema/user.schema';
 import {
@@ -15,12 +14,16 @@ import {
   UserTokenNotFoundException,
 } from '../exceptions';
 import { UserInfoTable } from '../drizzle/schema/userInfo.schema';
-import { addMinutes, isEmail, tokenFormStringToDate } from '../utils';
+import { addMinutes, isEmail } from '../utils';
 import { UserAuthTable } from '../drizzle/schema/userAuth.schema';
 import { eq } from 'drizzle-orm';
 import { RefreshTokenPlaceholder } from '../constants';
 import { AccessTokenCacheManager } from '../access-token-cache/access-token-cache.manager';
 import { CacheSetAccessTokenException } from '../exceptions/cache.exception';
+import { DefaultRegisterInput } from './dto/register.input';
+import { DefaultLoginInput } from './dto/login.input';
+import { UserPlanType, UserRoleType } from '../types';
+import { SetAccessTokenCacheInterface } from '../interfaces';
 
 @Injectable()
 export class AuthService {
@@ -32,8 +35,8 @@ export class AuthService {
   ) {}
 
   async defaultRegister(
-    input: RegisterInputType,
-    userAgent: string, // set by request
+    input: DefaultRegisterInput,
+    userAgent: string | undefined, // set by request
   ) {
     return await this.db.transaction(async (tx) => {
       const hash = await bcrypt.hash(
@@ -41,23 +44,23 @@ export class AuthService {
         Number(this.configService.get('SALT_OR_ROUND')),
       );
 
-      const responseOfCreatingUser = await tx
+      const responseOfCreatingUser = (await tx
         .insert(UserTable)
         .values({
           userName: input.userName,
           email: input.email,
           password: hash,
           refreshToken: RefreshTokenPlaceholder,
-          userAgent: userAgent,
+          userAgent: userAgent ?? '',
         })
         .returning({
           id: UserTable.id,
           userName: UserTable.userName,
           email: UserTable.email,
+          userAgent: UserTable.userAgent,
           role: UserTable.role,
           plan: UserTable.plan,
-          userAgent: UserTable.userAgent,
-        });
+        })) as SetAccessTokenCacheInterface[];
       if (!responseOfCreatingUser || responseOfCreatingUser.length === 0) {
         throw CreateUserException;
       }
@@ -99,6 +102,7 @@ export class AuthService {
         .insert(UserInfoTable)
         .values({
           userId: responseOfCreatingUser[0].id,
+          userName: input.userName,
           displayName: input.displayName,
         })
         .returning();
@@ -131,24 +135,32 @@ export class AuthService {
     });
   }
 
-  async defaultLogin(input: LoginInputType, userAgent: string) {
+  async defaultLogin(input: DefaultLoginInput, userAgent: string | undefined) {
     return await this.db.transaction(async (tx) => {
-      const responseOfSelectingUser = await tx
+      const responseOfSelectingUser = (await tx
         .select({
           id: UserTable.id,
           userName: UserTable.userName,
           email: UserTable.email,
-          password: UserTable.password,
           role: UserTable.role,
           plan: UserTable.plan,
           userAgent: UserTable.userAgent,
+          password: UserTable.password,
         })
         .from(UserTable)
         .where(
           isEmail(input.account)
             ? eq(UserTable.email, input.account)
             : eq(UserTable.userName, input.account),
-        );
+        )) as {
+        id: string;
+        userName: string;
+        email: string;
+        userAgent: string;
+        role: UserRoleType;
+        plan: UserPlanType;
+        password: string;
+      }[];
       if (!responseOfSelectingUser || responseOfSelectingUser.length === 0) {
         throw UserNotFoundException;
       }
@@ -185,7 +197,7 @@ export class AuthService {
         .update(UserTable)
         .set({
           refreshToken: refreshTokenData.refreshToken,
-          userAgent: userAgent,
+          ...(userAgent ? { userAgent: userAgent } : {}),
         })
         .returning();
       if (!responseOfUpdatingUser || responseOfUpdatingUser.length === 0) {

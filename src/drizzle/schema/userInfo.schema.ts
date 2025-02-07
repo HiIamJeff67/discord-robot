@@ -1,14 +1,14 @@
 import {
   index,
-  integer,
   pgTable,
+  serial,
   text,
   timestamp,
   uniqueIndex,
   uuid,
 } from 'drizzle-orm/pg-core';
 import { UserTable } from './user.schema';
-import { UserGenderEnum, UserPlanEnum } from './enum.schema';
+import { UserGenderEnum, UserStatusEnum } from './enum.schema';
 import { relations } from 'drizzle-orm';
 
 export const UserInfoTable = pgTable(
@@ -21,8 +21,17 @@ export const UserInfoTable = pgTable(
       })
       .unique()
       .notNull(),
+    userName: text('userName')
+      .references(() => UserTable.userName, {
+        onDelete: 'cascade',
+        onUpdate: 'cascade',
+      })
+      .notNull()
+      .unique(),
     displayName: text('displayName').notNull(),
+    inviteCode: serial('inviteCode').notNull().unique(),
     avatarURL: text('avatarURL'),
+    status: UserStatusEnum('status').notNull().default('Online'),
     gender: UserGenderEnum('gender').notNull().default('PreferNotToSay'),
     birthDate: timestamp('birthDate'),
     selfIntroduction: text('selfIntroduction'),
@@ -35,6 +44,14 @@ export const UserInfoTable = pgTable(
   (table) => {
     return {
       userIdIndex: uniqueIndex('userInfo_userIdIndex').on(table.userId),
+      userNameIndex: uniqueIndex('userInfo_userNameIndex').on(table.userName),
+      displayNameIndex: index('userInfo_displayNameIndex').on(
+        table.displayName,
+      ),
+      inviteCodeIndex: uniqueIndex('userInfo_inviteCodeIndex').on(
+        table.inviteCode,
+      ),
+      statusIndex: index('userInfo_statusIndex').on(table.status),
       birthDateIndex: index('userInfo_birthDateIndex').on(table.birthDate),
       updatedAtIndex: index('userInfo_updatedAtIndex').on(table.updatedAt),
       createdAtIndex: index('userInfo_createdAtIndex').on(table.createdAt),

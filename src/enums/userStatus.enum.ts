@@ -1,2 +1,12 @@
-export type UserStatusType = 'Online' | 'Offline' | 'AFK' | 'DoNotDisturb';
-export const UserStatusTypes = ['Online', 'Offline', 'AFK', 'DoNotDisturb'];
+import { registerEnumType } from '@nestjs/graphql';
+
+export const UserStatusEnum = {
+  Online: 'Online',
+  Offline: 'Offline',
+  AFK: 'AFK',
+  DoNotDisturb: 'DoNotDisturb',
+} as const;
+
+registerEnumType(UserStatusEnum, {
+  name: 'UserStatusEnum',
+});

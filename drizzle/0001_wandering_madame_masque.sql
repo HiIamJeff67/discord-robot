@@ -1,1 +1,0 @@
-ALTER TABLE "userAuth" ADD COLUMN "updatedAt" timestamp DEFAULT now() NOT NULL;

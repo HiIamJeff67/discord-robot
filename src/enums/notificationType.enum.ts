@@ -4,6 +4,7 @@ export const NotificationEnum = {
   System: 'System',
   Security: 'Security',
   AD: 'AD',
+  FriendRequest: 'FriendRequest',
 } as const;
 
 registerEnumType(NotificationEnum, {

@@ -14,6 +14,9 @@ import { AccessTokenCacheModule } from './access-token-cache/access-token-cache.
 import { AuthModule } from './auth/auth.module';
 import { UserModule } from './user/user.module';
 import { SupabaseModule } from './supabase/supabase.module';
+import { UsersToUsersModule } from './users-to-users/users-to-users.module';
+import { NotificationModule } from './notification/notification.module';
+import { UserAuthModule } from './user-auth/user-auth.module';
 
 @Module({
   imports: [
@@ -43,6 +46,10 @@ import { SupabaseModule } from './supabase/supabase.module';
           'request.credentials': 'include',
         },
       },
+      installSubscriptionHandlers: true,
+      subscriptions: {
+        'graphql-ws': true,
+      },
     }),
     DrizzleModule,
     CookieModule,
@@ -51,6 +58,9 @@ import { SupabaseModule } from './supabase/supabase.module';
     AuthModule,
     UserModule,
     SupabaseModule,
+    UsersToUsersModule,
+    NotificationModule,
+    UserAuthModule,
   ],
   controllers: [AppController],
   providers: [AppService],

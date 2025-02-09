@@ -3,7 +3,7 @@ import { UserTable } from './user.schema';
 import { NotificationTable } from './notification.schema';
 import { relations } from 'drizzle-orm';
 
-export const UsersToNotifications = pgTable(
+export const UsersToNotificationsTable = pgTable(
   'usersToNotifications',
   {
     userId: uuid('userId')
@@ -29,14 +29,14 @@ export const UsersToNotifications = pgTable(
 );
 
 export const UsersToNotificationsRelation = relations(
-  UsersToNotifications,
+  UsersToNotificationsTable,
   ({ one }) => ({
     user: one(UserTable, {
-      fields: [UsersToNotifications.userId],
+      fields: [UsersToNotificationsTable.userId],
       references: [UserTable.id],
     }),
     notification: one(NotificationTable, {
-      fields: [UsersToNotifications.notificationId],
+      fields: [UsersToNotificationsTable.notificationId],
       references: [NotificationTable.id],
     }),
   }),

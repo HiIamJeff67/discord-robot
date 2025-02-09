@@ -6,3 +6,4 @@ export * from './stringParser';
 export * from './dateCalculator';
 export * from './multerToFile';
 export * from './fileTypeValidator';
+export * from './getSubscriptionChannelName';

@@ -11,6 +11,7 @@ import {
   NotificationValues,
   UserGenderValues,
   UserPlanValues,
+  UsersToUsersStatusValues,
   UserRoleValues,
   UserStatusValues,
 } from '../../types';
@@ -27,5 +28,10 @@ export const UserPlanEnum = pgEnum('userPlan', UserPlanValues);
 export const NotificationTypeEnum = pgEnum(
   'notificationType',
   NotificationValues,
+);
+
+export const UsersToUsersStatusEnum = pgEnum(
+  'usersToUsersStatus',
+  UsersToUsersStatusValues,
 );
 /* ================================= Status Enums ================================= */

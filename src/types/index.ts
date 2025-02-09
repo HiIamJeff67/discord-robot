@@ -7,3 +7,4 @@ export * from './userStatus.type';
 export * from './searchOrder.type';
 export * from './searchInput.type';
 export * from './file.type';
+export * from './usersToUsers.type';

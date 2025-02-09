@@ -10,7 +10,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { User } from '../auth/decorators';
 import { ValidateTokenDataInterface } from '../interfaces';
 import { AccessTokenData } from '../models';
-import { UserInfo } from './models/user-info.model';
+import { PrivateUserInfo } from './models/user-info.model';
 import { UserService } from './user.service';
 
 @Controller('user')
@@ -23,7 +23,7 @@ export class UserController {
   async updateMyAvatar(
     @User() user: ValidateTokenDataInterface,
     @UploadedFile() avatarFile: Express.Multer.File,
-  ): Promise<UserInfo & AccessTokenData> {
+  ): Promise<PrivateUserInfo & AccessTokenData> {
     try {
       const res = await this.userService.updateMyAvatar(
         user.id,

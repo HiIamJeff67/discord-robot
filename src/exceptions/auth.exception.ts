@@ -64,3 +64,8 @@ export const AuthUserPlanNotMatchException = new UnauthorizedException({
   case: 'E-Auth-012',
   message: 'The plan of the user cannot use this route',
 });
+
+export const AuthUserHasNoPermissonException = new UnauthorizedException({
+  case: 'E-Auth-013',
+  message: 'The user has no permission to see or visit this resource',
+});

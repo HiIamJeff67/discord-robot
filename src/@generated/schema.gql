@@ -38,6 +38,16 @@ input FilterOptions {
   status: UserStatusEnum
 }
 
+input GetNotificationInput {
+  notificationId: String!
+}
+
+input GetNotificationsInput {
+  after: String! = "00000000-0000-0000-0000-000000000000"
+  first: Int! = 10
+  totCount: Int
+}
+
 input GetRelativeUserInfosInput {
   after: String! = "00000000-0000-0000-0000-000000000000"
   filterOptions: FilterOptions
@@ -51,24 +61,89 @@ input GetRelativeUserInfosInput {
 type Mutation {
   defaultLogin(input: DefaultLoginInput!): DefaultLoginOutput!
   defaultRegister(input: DefaultRegisterInput!): DefaultRegisterOutput!
-  deleteMe(input: DeleteMeInput!): UserInfo!
-  updateMyInfo(input: UpdateMyInfoInput!): UserInfo!
-  updateMyPlan(input: UpdateMyPlanInput!): UserPlan!
-  updateMyRole(input: UpdateMyRoleInput!): UserRole!
+  deleteMe(input: DeleteMeInput!): PrivateUserInfo!
+  updateMyInfo(input: UpdateMyInfoInput!): PrivateUserInfo!
+  updateMyPlan(input: UpdateMyPlanInput!): UserAccount!
+  updateMyRole(input: UpdateMyRoleInput!): UserAccount!
 }
 
-type PaginatedUserInfos {
-  edges: [UserInfoEdge!]
+type Notification {
+  content: String!
+  createdAt: DateTime!
+  id: String!
+  isRead: Boolean!
+  linkId: String
+  title: String!
+  type: NotificationEnum
+  updatedAt: DateTime!
+}
+
+type NotificationEdge {
+  cursor: String!
+  node: Notification!
+}
+
+enum NotificationEnum {
+  AD
+  FriendRequest
+  Security
+  System
+}
+
+type PaginatedNotifications {
+  edges: [NotificationEdge!]
   hasNextPage: Boolean!
   hasPrevPage: Boolean!
   totalCount: Int!
 }
 
+type PaginatedPublicUserInfos {
+  edges: [PublicUserInfoEdge!]
+  hasNextPage: Boolean!
+  hasPrevPage: Boolean!
+  totalCount: Int!
+}
+
+type PrivateUserInfo {
+  avatarURL: String
+  birthDate: DateTime
+  createdAt: DateTime!
+  displayName: String!
+  gender: UserGenderEnum!
+  inviteCode: Int!
+  selfIntroduction: String
+  status: UserStatusEnum!
+  updatedAt: DateTime!
+  userId: String!
+  userName: String!
+}
+
+type PublicUserInfo {
+  avatarURL: String
+  birthDate: DateTime
+  createdAt: DateTime!
+  displayName: String!
+  gender: UserGenderEnum!
+  inviteCode: Int!
+  selfIntroduction: String
+  status: UserStatusEnum!
+  updatedAt: DateTime!
+  userName: String!
+}
+
+type PublicUserInfoEdge {
+  cursor: String!
+  node: PublicUserInfo!
+}
+
 type Query {
   getMyAccount: UserAccount!
   getMyAuth: UserAuth!
-  getMyInfo: UserInfo!
-  getUserInfos(input: GetRelativeUserInfosInput!): PaginatedUserInfos!
+  getMyInfo: PrivateUserInfo!
+  getMyNotification(input: GetNotificationInput!): Notification!
+  getMyNotifications(input: GetNotificationsInput!): PaginatedNotifications!
+  getUserInfo(userName: String!): PublicUserInfo!
+  getUserInfos(input: GetRelativeUserInfosInput!): PaginatedPublicUserInfos!
 }
 
 enum SearchOrderEnum {
@@ -86,6 +161,10 @@ enum SearchUserInputEnum {
 input SortOptions {
   byCreatedAt: SearchOrderEnum! = None
   byUpdatedAt: SearchOrderEnum! = Descending
+}
+
+type Subscription {
+  registerNotificationSubscription: String!
 }
 
 input UpdateMyInfoInput {
@@ -130,37 +209,11 @@ enum UserGenderEnum {
   PreferNotToSay
 }
 
-type UserInfo {
-  avatarURL: String
-  birthDate: DateTime
-  createdAt: DateTime!
-  displayName: String!
-  gender: UserGenderEnum!
-  inviteCode: Int!
-  selfIntroduction: String
-  status: UserStatusEnum!
-  updatedAt: DateTime!
-  userName: String!
-}
-
-type UserInfoEdge {
-  cursor: String!
-  node: UserInfo!
-}
-
-type UserPlan {
-  plan: UserPlanEnum!
-}
-
 enum UserPlanEnum {
   Enterprise
   Free
   Pro
   Ultimate
-}
-
-type UserRole {
-  role: UserRoleEnum!
 }
 
 enum UserRoleEnum {

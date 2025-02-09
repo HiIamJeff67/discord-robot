@@ -14,6 +14,7 @@ import {
 } from '../exceptions';
 import { isMimeFileTypeIn, multerToFile } from '../utils';
 import { MimeType, ValidAvatarMimeTypes } from '../types';
+import { SupabaseBucketEnum } from '../enums';
 
 @Injectable()
 export class SupabaseStorageService {
@@ -54,7 +55,7 @@ export class SupabaseStorageService {
 
       const { data: existingFiles, error: listError } =
         await this.supabaseClient.storage
-          .from('AvatarBucket')
+          .from(SupabaseBucketEnum.AvatarBucket)
           .list(targetFolderPath);
       if (listError) {
         throw ApiListAvatarFileException;
@@ -65,7 +66,7 @@ export class SupabaseStorageService {
           (file) => `${targetFolderPath}${file.name}`,
         );
         const { error: deleteError } = await this.supabaseClient.storage
-          .from('AvatarBucket')
+          .from(SupabaseBucketEnum.AvatarBucket)
           .remove(filesToDelete);
         if (deleteError) {
           throw ApiDeleteAvatarFileException;
@@ -73,14 +74,14 @@ export class SupabaseStorageService {
       }
 
       const { error: uploadError } = await this.supabaseClient.storage
-        .from('AvatarBucket')
+        .from(SupabaseBucketEnum.AvatarBucket)
         .upload(targetFilePath, convertedFile);
       if (uploadError) {
         throw ApiUploadAvatarFileException;
       }
 
       const { data: publicUrlData } = this.supabaseClient.storage
-        .from('AvatarBucket')
+        .from(SupabaseBucketEnum.AvatarBucket)
         .getPublicUrl(targetFilePath);
       if (!publicUrlData || !publicUrlData.publicUrl) {
         throw ApiFailedToGetAvatarPublicUrlException;

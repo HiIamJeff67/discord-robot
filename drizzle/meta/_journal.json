@@ -15,6 +15,55 @@
       "when": 1738739702006,
       "tag": "0001_black_the_phantom",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1739004824318,
+      "tag": "0002_wise_spiral",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1739006483477,
+      "tag": "0003_steady_katie_power",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1739006557881,
+      "tag": "0004_complex_unus",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1739010032214,
+      "tag": "0005_chemical_cassandra_nova",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1739010284652,
+      "tag": "0006_tranquil_scarlet_witch",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1739092585014,
+      "tag": "0007_lazy_wendell_vaughn",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1739103765318,
+      "tag": "0008_orange_amphibian",
+      "breakpoints": true
     }
   ]
 }

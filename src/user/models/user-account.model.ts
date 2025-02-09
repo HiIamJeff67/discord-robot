@@ -10,6 +10,9 @@ import { MaxUserNameLength, MinUserNameLength } from '../../constants';
 import { UserPlanEnum, UserRoleEnum } from '../../enums';
 
 @ObjectType()
+export class PublicUserAccount {}
+
+@ObjectType()
 export class UserAccount {
   @Field(() => String)
   @MinLength(MinUserNameLength)
@@ -30,18 +33,4 @@ export class UserAccount {
 
   @Field(() => String)
   userAgent: string;
-}
-
-@ObjectType()
-export class UserRole {
-  @Field(() => UserRoleEnum)
-  @IsIn(UserRoleValues)
-  role: UserRoleType;
-}
-
-@ObjectType()
-export class UserPlan {
-  @Field(() => UserPlanEnum)
-  @IsIn(UserPlanValues)
-  plan: UserPlanType;
 }

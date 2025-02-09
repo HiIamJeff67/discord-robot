@@ -1,0 +1,1293 @@
+{
+  "id": "40887c45-7715-4585-96ec-ae0090a0126d",
+  "prevId": "f8df1487-2d1c-4cf4-ae8c-3c71f55b0e12",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.friendRequest": {
+      "name": "friendRequest",
+      "schema": "",
+      "columns": {
+        "userId1": {
+          "name": "userId1",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "userId2": {
+          "name": "userId2",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "from": {
+          "name": "from",
+          "type": "friendRequestFrom",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'User1'"
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "friendRequest_userId1Index": {
+          "name": "friendRequest_userId1Index",
+          "columns": [
+            {
+              "expression": "userId1",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "friendRequest_userId2Index": {
+          "name": "friendRequest_userId2Index",
+          "columns": [
+            {
+              "expression": "userId2",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "friendRequest_userId1_user_id_fk": {
+          "name": "friendRequest_userId1_user_id_fk",
+          "tableFrom": "friendRequest",
+          "tableTo": "user",
+          "columnsFrom": [
+            "userId1"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        },
+        "friendRequest_userId2_user_id_fk": {
+          "name": "friendRequest_userId2_user_id_fk",
+          "tableFrom": "friendRequest",
+          "tableTo": "user",
+          "columnsFrom": [
+            "userId2"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        }
+      },
+      "compositePrimaryKeys": {
+        "friendRequest_userId1_userId2_pk": {
+          "name": "friendRequest_userId1_userId2_pk",
+          "columns": [
+            "userId1",
+            "userId2"
+          ]
+        }
+      },
+      "uniqueConstraints": {
+        "friendRequest_userId1_unique": {
+          "name": "friendRequest_userId1_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "userId1"
+          ]
+        },
+        "friendRequest_userId2_unique": {
+          "name": "friendRequest_userId2_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "userId2"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.notification": {
+      "name": "notification",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "creatorId": {
+          "name": "creatorId",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "title": {
+          "name": "title",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "content": {
+          "name": "content",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "type": {
+          "name": "type",
+          "type": "notificationType",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "link": {
+          "name": "link",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "updatedAt": {
+          "name": "updatedAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "notification_creatorIdIndex": {
+          "name": "notification_creatorIdIndex",
+          "columns": [
+            {
+              "expression": "creatorId",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "notification_titleIndex": {
+          "name": "notification_titleIndex",
+          "columns": [
+            {
+              "expression": "title",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "notification_contentIndex": {
+          "name": "notification_contentIndex",
+          "columns": [
+            {
+              "expression": "content",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "notification_typeIndex": {
+          "name": "notification_typeIndex",
+          "columns": [
+            {
+              "expression": "type",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "notification_updatedAtIndex": {
+          "name": "notification_updatedAtIndex",
+          "columns": [
+            {
+              "expression": "updatedAt",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "notification_createdAtIndex": {
+          "name": "notification_createdAtIndex",
+          "columns": [
+            {
+              "expression": "createdAt",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "notification_creatorId_user_id_fk": {
+          "name": "notification_creatorId_user_id_fk",
+          "tableFrom": "notification",
+          "tableTo": "user",
+          "columnsFrom": [
+            "creatorId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.user": {
+      "name": "user",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "userName": {
+          "name": "userName",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "email": {
+          "name": "email",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "password": {
+          "name": "password",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "role": {
+          "name": "role",
+          "type": "userRole",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'NonCertified'"
+        },
+        "plan": {
+          "name": "plan",
+          "type": "userPlan",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'Free'"
+        },
+        "refreshToken": {
+          "name": "refreshToken",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "userAgent": {
+          "name": "userAgent",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "user_userNameIndex": {
+          "name": "user_userNameIndex",
+          "columns": [
+            {
+              "expression": "userName",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "user_emailIndex": {
+          "name": "user_emailIndex",
+          "columns": [
+            {
+              "expression": "email",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "user_roleIndex": {
+          "name": "user_roleIndex",
+          "columns": [
+            {
+              "expression": "role",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "user_planIndex": {
+          "name": "user_planIndex",
+          "columns": [
+            {
+              "expression": "plan",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "user_userAgentIndex": {
+          "name": "user_userAgentIndex",
+          "columns": [
+            {
+              "expression": "userAgent",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "user_userName_unique": {
+          "name": "user_userName_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "userName"
+          ]
+        },
+        "user_email_unique": {
+          "name": "user_email_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "email"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.userAuth": {
+      "name": "userAuth",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "userId": {
+          "name": "userId",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "authCode": {
+          "name": "authCode",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "authCodeExpiredAt": {
+          "name": "authCodeExpiredAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "phoneNumber": {
+          "name": "phoneNumber",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "discordId": {
+          "name": "discordId",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "googleId": {
+          "name": "googleId",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "spotifyId": {
+          "name": "spotifyId",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "twitchId": {
+          "name": "twitchId",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "metaId": {
+          "name": "metaId",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "redditId": {
+          "name": "redditId",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "lineId": {
+          "name": "lineId",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "updatedAt": {
+          "name": "updatedAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "userAuth_phoneNumberIndex": {
+          "name": "userAuth_phoneNumberIndex",
+          "columns": [
+            {
+              "expression": "phoneNumber",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "userAuth_discordIdIndex": {
+          "name": "userAuth_discordIdIndex",
+          "columns": [
+            {
+              "expression": "discordId",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "userAuth_googldIdIndex": {
+          "name": "userAuth_googldIdIndex",
+          "columns": [
+            {
+              "expression": "googleId",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "userAuth_spotifyIdIndex": {
+          "name": "userAuth_spotifyIdIndex",
+          "columns": [
+            {
+              "expression": "spotifyId",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "userAuth_twitchIdIndex": {
+          "name": "userAuth_twitchIdIndex",
+          "columns": [
+            {
+              "expression": "twitchId",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "userAuth_metaIdIndex": {
+          "name": "userAuth_metaIdIndex",
+          "columns": [
+            {
+              "expression": "metaId",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "userAuth_redditIdIndex": {
+          "name": "userAuth_redditIdIndex",
+          "columns": [
+            {
+              "expression": "redditId",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "userAuth_lineIdIndex": {
+          "name": "userAuth_lineIdIndex",
+          "columns": [
+            {
+              "expression": "lineId",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "userAuth_userId_user_id_fk": {
+          "name": "userAuth_userId_user_id_fk",
+          "tableFrom": "userAuth",
+          "tableTo": "user",
+          "columnsFrom": [
+            "userId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "userAuth_userId_unique": {
+          "name": "userAuth_userId_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "userId"
+          ]
+        },
+        "userAuth_phoneNumber_unique": {
+          "name": "userAuth_phoneNumber_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "phoneNumber"
+          ]
+        },
+        "userAuth_discordId_unique": {
+          "name": "userAuth_discordId_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "discordId"
+          ]
+        },
+        "userAuth_googleId_unique": {
+          "name": "userAuth_googleId_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "googleId"
+          ]
+        },
+        "userAuth_spotifyId_unique": {
+          "name": "userAuth_spotifyId_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "spotifyId"
+          ]
+        },
+        "userAuth_twitchId_unique": {
+          "name": "userAuth_twitchId_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "twitchId"
+          ]
+        },
+        "userAuth_metaId_unique": {
+          "name": "userAuth_metaId_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "metaId"
+          ]
+        },
+        "userAuth_redditId_unique": {
+          "name": "userAuth_redditId_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "redditId"
+          ]
+        },
+        "userAuth_lineId_unique": {
+          "name": "userAuth_lineId_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "lineId"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.userInfo": {
+      "name": "userInfo",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "userId": {
+          "name": "userId",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "userName": {
+          "name": "userName",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "displayName": {
+          "name": "displayName",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "inviteCode": {
+          "name": "inviteCode",
+          "type": "serial",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "avatarURL": {
+          "name": "avatarURL",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "status": {
+          "name": "status",
+          "type": "userStatus",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'Online'"
+        },
+        "gender": {
+          "name": "gender",
+          "type": "userGender",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'PreferNotToSay'"
+        },
+        "birthDate": {
+          "name": "birthDate",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "selfIntroduction": {
+          "name": "selfIntroduction",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "updatedAt": {
+          "name": "updatedAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "userInfo_userIdIndex": {
+          "name": "userInfo_userIdIndex",
+          "columns": [
+            {
+              "expression": "userId",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "userInfo_userNameIndex": {
+          "name": "userInfo_userNameIndex",
+          "columns": [
+            {
+              "expression": "userName",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "userInfo_displayNameIndex": {
+          "name": "userInfo_displayNameIndex",
+          "columns": [
+            {
+              "expression": "displayName",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "userInfo_inviteCodeIndex": {
+          "name": "userInfo_inviteCodeIndex",
+          "columns": [
+            {
+              "expression": "inviteCode",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "userInfo_statusIndex": {
+          "name": "userInfo_statusIndex",
+          "columns": [
+            {
+              "expression": "status",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "userInfo_birthDateIndex": {
+          "name": "userInfo_birthDateIndex",
+          "columns": [
+            {
+              "expression": "birthDate",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "userInfo_updatedAtIndex": {
+          "name": "userInfo_updatedAtIndex",
+          "columns": [
+            {
+              "expression": "updatedAt",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "userInfo_createdAtIndex": {
+          "name": "userInfo_createdAtIndex",
+          "columns": [
+            {
+              "expression": "createdAt",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "userInfo_userId_user_id_fk": {
+          "name": "userInfo_userId_user_id_fk",
+          "tableFrom": "userInfo",
+          "tableTo": "user",
+          "columnsFrom": [
+            "userId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "userInfo_userName_user_userName_fk": {
+          "name": "userInfo_userName_user_userName_fk",
+          "tableFrom": "userInfo",
+          "tableTo": "user",
+          "columnsFrom": [
+            "userName"
+          ],
+          "columnsTo": [
+            "userName"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "userInfo_userId_unique": {
+          "name": "userInfo_userId_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "userId"
+          ]
+        },
+        "userInfo_userName_unique": {
+          "name": "userInfo_userName_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "userName"
+          ]
+        },
+        "userInfo_inviteCode_unique": {
+          "name": "userInfo_inviteCode_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "inviteCode"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.usersToNotifications": {
+      "name": "usersToNotifications",
+      "schema": "",
+      "columns": {
+        "userId": {
+          "name": "userId",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "notificationId": {
+          "name": "notificationId",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "usersToNotifications_userIdIndex": {
+          "name": "usersToNotifications_userIdIndex",
+          "columns": [
+            {
+              "expression": "userId",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "usersToNotifications_notificationIdIndex": {
+          "name": "usersToNotifications_notificationIdIndex",
+          "columns": [
+            {
+              "expression": "notificationId",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "usersToNotifications_userId_user_id_fk": {
+          "name": "usersToNotifications_userId_user_id_fk",
+          "tableFrom": "usersToNotifications",
+          "tableTo": "user",
+          "columnsFrom": [
+            "userId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "usersToNotifications_notificationId_notification_id_fk": {
+          "name": "usersToNotifications_notificationId_notification_id_fk",
+          "tableFrom": "usersToNotifications",
+          "tableTo": "notification",
+          "columnsFrom": [
+            "notificationId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "usersToNotifications_userId_notificationId_pk": {
+          "name": "usersToNotifications_userId_notificationId_pk",
+          "columns": [
+            "userId",
+            "notificationId"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.usersToUsers": {
+      "name": "usersToUsers",
+      "schema": "",
+      "columns": {
+        "userId1": {
+          "name": "userId1",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "userId2": {
+          "name": "userId2",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "status": {
+          "name": "status",
+          "type": "usersToUsersStatus",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "updatedAt": {
+          "name": "updatedAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "usersToUsers_userId1Index": {
+          "name": "usersToUsers_userId1Index",
+          "columns": [
+            {
+              "expression": "userId1",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "usersToUsers_userId2Index": {
+          "name": "usersToUsers_userId2Index",
+          "columns": [
+            {
+              "expression": "userId2",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "usersToUsers_userId1_user_id_fk": {
+          "name": "usersToUsers_userId1_user_id_fk",
+          "tableFrom": "usersToUsers",
+          "tableTo": "user",
+          "columnsFrom": [
+            "userId1"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        },
+        "usersToUsers_userId2_user_id_fk": {
+          "name": "usersToUsers_userId2_user_id_fk",
+          "tableFrom": "usersToUsers",
+          "tableTo": "user",
+          "columnsFrom": [
+            "userId2"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        }
+      },
+      "compositePrimaryKeys": {
+        "usersToUsers_userId1_userId2_pk": {
+          "name": "usersToUsers_userId1_userId2_pk",
+          "columns": [
+            "userId1",
+            "userId2"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {
+    "public.friendRequestFrom": {
+      "name": "friendRequestFrom",
+      "schema": "public",
+      "values": [
+        "User1",
+        "User2"
+      ]
+    },
+    "public.notificationType": {
+      "name": "notificationType",
+      "schema": "public",
+      "values": [
+        "System",
+        "Security",
+        "AD"
+      ]
+    },
+    "public.userGender": {
+      "name": "userGender",
+      "schema": "public",
+      "values": [
+        "Male",
+        "Female",
+        "PreferNotToSay"
+      ]
+    },
+    "public.userPlan": {
+      "name": "userPlan",
+      "schema": "public",
+      "values": [
+        "Free",
+        "Pro",
+        "Ultimate",
+        "Enterprise"
+      ]
+    },
+    "public.userRole": {
+      "name": "userRole",
+      "schema": "public",
+      "values": [
+        "NonCertified",
+        "Certified",
+        "AlphaExplorer",
+        "BetaExplorer",
+        "GammaExplorer",
+        "Developer",
+        "Admin"
+      ]
+    },
+    "public.userStatus": {
+      "name": "userStatus",
+      "schema": "public",
+      "values": [
+        "Online",
+        "Offline",
+        "AFK",
+        "DoNotDisturb"
+      ]
+    },
+    "public.usersToUsersStatus": {
+      "name": "usersToUsersStatus",
+      "schema": "public",
+      "values": [
+        "Friend",
+        "BestFriend",
+        "Blocked"
+      ]
+    }
+  },
+  "schemas": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}

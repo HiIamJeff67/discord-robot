@@ -5,3 +5,5 @@ export * from './userRole.enum';
 export * from './notificationType.enum';
 export * from './searchOrder.enum';
 export * from './searchInput.enum';
+export * from './supabaseBucket.enum';
+export * from './usersToUsers.enum';

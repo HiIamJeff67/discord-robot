@@ -4,39 +4,27 @@ import { DRIZZLE } from '../drizzle/drizzle.module';
 import { DrizzleDB } from '../drizzle/types/drizzle';
 import { and, asc, count, desc, eq, gt, like, SQL } from 'drizzle-orm';
 import { UserInfoTable } from '../drizzle/schema/userInfo.schema';
-import { UserAuthTable } from '../drizzle/schema/userAuth.schema';
 import {
   UpdateMyInfoInput,
   UpdateMyPlanInput,
   UpdateMyRoleInput,
-} from './dto/update-user.input';
+} from './dto/update-user-info.input';
 import { UserTable } from '../drizzle/schema/user.schema';
 import { DeleteMeInput } from './dto/delete-user.input';
 import {
   AuthPasswordNotMatchException,
   UserNotFoundException,
 } from '../exceptions';
-import { UserGenderType, UserStatusType } from '../types';
-import { GetRelativeUserInfosInput } from './dto/get-user.input';
+import { GetRelativeUserInfosInput } from './dto/get-user-info.input';
 import { SearchOrderEnum } from '../enums';
-import { PaginatedUserInfos, UserInfo } from './models/user-info.model';
+import {
+  PaginatedPublicUserInfos,
+  PrivateUserInfo,
+  PublicUserInfo,
+} from './models/user-info.model';
 import { DefaultAfterValueForSearch } from '../constants';
-import { UserAuth } from './models/user-auth.model';
-import { UserPlan, UserRole } from './models/user-account.model';
+import { UserAccount } from './models/user-account.model';
 import { SupabaseStorageService } from '../supabase-storage/supabase-storage.service';
-
-interface GetUserInfoInterface {
-  userName: string;
-  displayName: string;
-  avatarURL: string | null;
-  status: UserStatusType;
-  inviteCode: number;
-  gender: UserGenderType;
-  birthDate: Date;
-  selfIntroduction: string;
-  updatedAt: Date;
-  createdAt: Date;
-}
 
 @Injectable()
 export class UserService {
@@ -46,9 +34,35 @@ export class UserService {
   ) {}
 
   /* ============================== Get Operations ============================== */
-  async getUserInfo(userId: string): Promise<UserInfo | undefined> {
-    return (await this.db.query.UserInfoTable.findFirst({
+  async getPrivateUserInfo(
+    userId: string,
+  ): Promise<PrivateUserInfo | undefined> {
+    const response = (await this.db.query.UserInfoTable.findFirst({
       where: eq(UserInfoTable.userId, userId),
+      columns: {
+        userId: true,
+        userName: true,
+        displayName: true,
+        avatarURL: true,
+        status: true,
+        inviteCode: true,
+        gender: true,
+        birthDate: true,
+        selfIntroduction: true,
+        updatedAt: true,
+        createdAt: true,
+      },
+    })) as PrivateUserInfo | undefined;
+    if (!response) {
+      throw UserNotFoundException;
+    }
+
+    return response;
+  }
+
+  async getPublicUserInfo(userName: string): Promise<PublicUserInfo> {
+    const response = (await this.db.query.UserInfoTable.findFirst({
+      where: eq(UserInfoTable.userName, userName),
       columns: {
         userName: true,
         displayName: true,
@@ -61,12 +75,17 @@ export class UserService {
         updatedAt: true,
         createdAt: true,
       },
-    })) as GetUserInfoInterface | undefined;
+    })) as PublicUserInfo | undefined;
+    if (!response) {
+      throw UserNotFoundException;
+    }
+
+    return response;
   }
 
-  async getRelativeUserInfos(
+  async getRelativePublicUserInfos(
     input: GetRelativeUserInfosInput,
-  ): Promise<PaginatedUserInfos> {
+  ): Promise<PaginatedPublicUserInfos> {
     const query = this.db
       .select({
         id: UserInfoTable.id,
@@ -137,19 +156,10 @@ export class UserService {
       .where(and(...sqls))
       .orderBy(...orders)
       // fetch one more data to check if there's a next page or not
-      .limit(input.first + 1)) as {
-      id: string;
-      userName: string;
-      displayName: string;
-      avatarURL: string;
-      status: UserStatusType;
-      inviteCode: number;
-      gender: UserGenderType;
-      birthDate: Date;
-      selfIntroduction: string;
-      updatedAt: Date;
-      createdAt: Date;
-    }[];
+      .limit(input.first + 1)) as (PublicUserInfo & { id: string })[];
+    if (!response || response.length === 0) {
+      throw UserNotFoundException;
+    }
 
     const hasNextPage: boolean = response.length > input.first;
     const hasPrevPage: boolean = input.after !== DefaultAfterValueForSearch;
@@ -176,30 +186,13 @@ export class UserService {
       hasPrevPage: hasPrevPage,
     };
   }
-
-  async getMyAuth(userId: string): Promise<UserAuth | undefined> {
-    return await this.db.query.UserAuthTable.findFirst({
-      where: eq(UserAuthTable.userId, userId),
-      columns: {
-        phoneNumber: true,
-        discordId: true,
-        googleId: true,
-        spotifyId: true,
-        twitchId: true,
-        metaId: true,
-        redditId: true,
-        lineId: true,
-        updatedAt: true,
-      },
-    });
-  }
   /* ============================== Get Operations ============================== */
 
   /* ============================== Update Operations ============================== */
   async updateMyInfo(
     userId: string,
     input: UpdateMyInfoInput,
-  ): Promise<UserInfo> {
+  ): Promise<PrivateUserInfo> {
     const response = (await this.db
       .update(UserInfoTable)
       .set({
@@ -221,7 +214,7 @@ export class UserService {
         selfIntroduction: UserInfoTable.selfIntroduction,
         updatedAt: UserInfoTable.updatedAt,
         createdAt: UserInfoTable.createdAt,
-      })) as UserInfo[] | undefined;
+      })) as PrivateUserInfo[] | undefined;
 
     if (!response || response.length === 0) {
       throw UserNotFoundException;
@@ -235,7 +228,7 @@ export class UserService {
     userId: string,
     userName: string,
     avatarFile: Express.Multer.File,
-  ): Promise<UserInfo> {
+  ): Promise<PrivateUserInfo> {
     const response = (await this.db
       .update(UserInfoTable)
       .set({
@@ -253,7 +246,7 @@ export class UserService {
         selfIntroduction: UserInfoTable.selfIntroduction,
         updatedAt: UserInfoTable.updatedAt,
         createdAt: UserInfoTable.createdAt,
-      })) as UserInfo[] | undefined;
+      })) as PrivateUserInfo[] | undefined;
     if (!response || response.length === 0) {
       throw UserNotFoundException;
     }
@@ -264,7 +257,7 @@ export class UserService {
   async updateMyRole(
     userId: string,
     input: UpdateMyRoleInput,
-  ): Promise<UserRole> {
+  ): Promise<UserAccount> {
     const response = (await this.db
       .update(UserTable)
       .set({
@@ -272,8 +265,12 @@ export class UserService {
       })
       .where(eq(UserTable.id, userId))
       .returning({
+        userName: UserTable.userName,
+        email: UserTable.email,
         role: UserTable.role,
-      })) as UserRole[] | undefined;
+        plan: UserTable.plan,
+        userAgent: UserTable.userAgent,
+      })) as UserAccount[] | undefined;
 
     if (!response || response.length === 0) {
       throw UserNotFoundException;
@@ -285,7 +282,7 @@ export class UserService {
   async updateMyPlan(
     userId: string,
     input: UpdateMyPlanInput,
-  ): Promise<UserPlan> {
+  ): Promise<UserAccount> {
     const response = (await this.db
       .update(UserTable)
       .set({
@@ -293,8 +290,12 @@ export class UserService {
       })
       .where(eq(UserTable.id, userId))
       .returning({
+        userName: UserTable.userName,
+        email: UserTable.email,
+        role: UserTable.role,
         plan: UserTable.plan,
-      })) as UserPlan[] | undefined;
+        userAgent: UserTable.userAgent,
+      })) as UserAccount[] | undefined;
 
     if (!response || response.length === 0) {
       throw UserNotFoundException;
@@ -305,7 +306,10 @@ export class UserService {
   /* ============================== Update Operations ============================== */
 
   /* ============================== Delete Operations ============================== */
-  async deleteMe(userId: string, input: DeleteMeInput): Promise<UserInfo> {
+  async deleteMe(
+    userId: string,
+    input: DeleteMeInput,
+  ): Promise<PrivateUserInfo> {
     const responseOfSelectingUser = await this.db.query.UserTable.findFirst({
       where: eq(UserTable.id, userId),
       columns: {
@@ -338,7 +342,7 @@ export class UserService {
         selfIntroduction: UserInfoTable.selfIntroduction,
         updatedAt: UserInfoTable.updatedAt,
         createdAt: UserInfoTable.createdAt,
-      })) as UserInfo[] | undefined;
+      })) as PrivateUserInfo[] | undefined;
 
     if (!responseOfDeletingUser || responseOfDeletingUser.length === 0) {
       throw UserNotFoundException;

@@ -1,11 +1,16 @@
 import { NotFoundException } from '@nestjs/common';
 
 export const UserNotFoundException = new NotFoundException({
-  case: 'E-FIND-001',
+  case: 'E-Find-001',
   message: 'Cannot found any users',
 });
 
 export const UserTokenNotFoundException = new NotFoundException({
-  case: 'E-FIND-002',
+  case: 'E-Find-002',
   message: 'Cannot found any user token',
+});
+
+export const NotificationNotFoundException = new NotFoundException({
+  case: 'E-Find-003',
+  message: 'Cannot found any notifications',
 });

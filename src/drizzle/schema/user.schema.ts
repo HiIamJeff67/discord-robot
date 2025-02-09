@@ -3,7 +3,12 @@ import { UserPlanEnum, UserRoleEnum } from './enum.schema';
 import { relations } from 'drizzle-orm';
 import { UserInfoTable } from './userInfo.schema';
 import { UserAuthTable } from './userAuth.schema';
-import { UsersToNotifications } from './usersToNotifications.schema';
+import { UsersToNotificationsTable } from './usersToNotifications.schema';
+import {
+  FromUserRelationName,
+  ToUserRelationName,
+  UsersToUsersTable,
+} from './usersToUsers.schema';
 
 export const UserTable = pgTable(
   'user',
@@ -31,5 +36,11 @@ export const UserTable = pgTable(
 export const UserRelation = relations(UserTable, ({ one, many }) => ({
   info: one(UserInfoTable),
   auth: one(UserAuthTable),
-  usersToNotifications: many(UsersToNotifications),
+  usersToNotifications: many(UsersToNotificationsTable),
+  friendReqFrom: many(UsersToUsersTable, {
+    relationName: FromUserRelationName,
+  }),
+  friendReqTo: many(UsersToUsersTable, {
+    relationName: ToUserRelationName,
+  }),
 }));

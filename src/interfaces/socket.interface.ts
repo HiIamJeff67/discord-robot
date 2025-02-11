@@ -1,11 +1,10 @@
+import { Socket } from 'socket.io';
 import { UserPlanType, UserRoleType, UserStatusType } from '../types';
 
-export interface SetAccessTokenCacheInterface {
-  id: string;
+export interface SocketMetaPayloadInterface {
   userName: string;
-  email: string;
-  userAgent: string;
   status: UserStatusType;
   role: UserRoleType;
   plan: UserPlanType;
+  socket: Socket;
 }

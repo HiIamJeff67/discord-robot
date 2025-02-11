@@ -1,12 +1,12 @@
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Inject, Injectable } from '@nestjs/common';
 import { Cache } from 'cache-manager';
-import { AccessTokenInterface } from '../interfaces';
-import { tokenFormStringToNumberSecond } from '../utils';
 import {
-  SetAccessTokenCacheInterface,
-  CacheUserInterface,
-} from '../interfaces/cache.interface';
+  AccessTokenInterface,
+  ValidateTokenDataInterface,
+} from '../interfaces';
+import { tokenFormStringToNumberSecond } from '../utils';
+import { SetAccessTokenCacheInterface } from '../interfaces';
 
 export const AccessTokenCacheStore = 'accessToken';
 
@@ -17,15 +17,17 @@ export class AccessTokenCacheManager {
   async set(
     accessTokenData: AccessTokenInterface,
     cacheData: SetAccessTokenCacheInterface,
-  ): Promise<CacheUserInterface | undefined> {
+  ): Promise<ValidateTokenDataInterface | undefined> {
     return await this.cacheManager.set(
       `${AccessTokenCacheStore}:${accessTokenData.accessToken.replaceAll(' ', '')}`,
-      { ...cacheData, expiresIn: accessTokenData.expiresIn },
+      { ...cacheData, accessTokenData: accessTokenData },
       tokenFormStringToNumberSecond(accessTokenData.expiresIn) * 1000,
     );
   }
 
-  async get(accessToken: string): Promise<CacheUserInterface | undefined> {
+  async get(
+    accessToken: string,
+  ): Promise<ValidateTokenDataInterface | undefined> {
     return (
       (await this.cacheManager.get(
         `${AccessTokenCacheStore}:${accessToken.replaceAll(' ', '')}`,

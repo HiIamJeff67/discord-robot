@@ -2,29 +2,30 @@ import * as bcrypt from 'bcrypt';
 import { Inject, Injectable } from '@nestjs/common';
 import { DRIZZLE } from '../drizzle/drizzle.module';
 import { DrizzleDB } from '../drizzle/types/drizzle';
+import { SupabaseStorageService } from '../supabase-storage/supabase-storage.service';
 import { and, asc, count, desc, eq, gt, like, SQL } from 'drizzle-orm';
 import { UserInfoTable } from '../drizzle/schema/userInfo.schema';
-import {
-  UpdateMyInfoInput,
-  UpdateMyPlanInput,
-  UpdateMyRoleInput,
-} from './dto/update-user-info.input';
 import { UserTable } from '../drizzle/schema/user.schema';
-import { DeleteMeInput } from './dto/delete-user.input';
 import {
-  AuthPasswordNotMatchException,
-  UserNotFoundException,
-} from '../exceptions';
+  UpdateAccountInput,
+  UpdateInfoInput,
+} from './dto/update-user-info.input';
+import { DeleteAccountInput } from './dto/delete-user.input';
 import { GetRelativeUserInfosInput } from './dto/get-user-info.input';
-import { SearchOrderEnum } from '../enums';
 import {
+  AffectedPrivateUserInfo,
   PaginatedPublicUserInfos,
   PrivateUserInfo,
   PublicUserInfo,
 } from './models/user-info.model';
-import { DefaultAfterValueForSearch } from '../constants';
 import { UserAccount } from './models/user-account.model';
-import { SupabaseStorageService } from '../supabase-storage/supabase-storage.service';
+import { AffectedCountModel } from '../models';
+import {
+  AuthPasswordNotMatchException,
+  UserNotFoundException,
+} from '../exceptions';
+import { SearchOrderEnum } from '../enums';
+import { DefaultAfterValueForSearch } from '../constants';
 
 @Injectable()
 export class UserService {
@@ -34,13 +35,10 @@ export class UserService {
   ) {}
 
   /* ============================== Get Operations ============================== */
-  async getPrivateUserInfo(
-    userId: string,
-  ): Promise<PrivateUserInfo | undefined> {
+  async getMe(userId: string): Promise<PrivateUserInfo | undefined> {
     const response = (await this.db.query.UserInfoTable.findFirst({
       where: eq(UserInfoTable.userId, userId),
       columns: {
-        userId: true,
         userName: true,
         displayName: true,
         avatarURL: true,
@@ -60,7 +58,7 @@ export class UserService {
     return response;
   }
 
-  async getPublicUserInfo(userName: string): Promise<PublicUserInfo> {
+  async getOneById(userName: string): Promise<PublicUserInfo> {
     const response = (await this.db.query.UserInfoTable.findFirst({
       where: eq(UserInfoTable.userName, userName),
       columns: {
@@ -83,7 +81,7 @@ export class UserService {
     return response;
   }
 
-  async getRelativePublicUserInfos(
+  async getAllRelative(
     input: GetRelativeUserInfosInput,
   ): Promise<PaginatedPublicUserInfos> {
     const query = this.db
@@ -189,10 +187,10 @@ export class UserService {
   /* ============================== Get Operations ============================== */
 
   /* ============================== Update Operations ============================== */
-  async updateMyInfo(
+  async updateInfoById(
     userId: string,
-    input: UpdateMyInfoInput,
-  ): Promise<PrivateUserInfo> {
+    input: UpdateInfoInput,
+  ): Promise<AffectedPrivateUserInfo> {
     const response = (await this.db
       .update(UserInfoTable)
       .set({
@@ -206,9 +204,9 @@ export class UserService {
       .returning({
         userName: UserInfoTable.userName,
         displayName: UserInfoTable.displayName,
+        inviteCode: UserInfoTable.inviteCode,
         avatarURL: UserInfoTable.avatarURL,
         status: UserInfoTable.status,
-        inviteCode: UserInfoTable.inviteCode,
         gender: UserInfoTable.gender,
         birthDate: UserInfoTable.birthDate,
         selfIntroduction: UserInfoTable.selfIntroduction,
@@ -216,76 +214,51 @@ export class UserService {
         createdAt: UserInfoTable.createdAt,
       })) as PrivateUserInfo[] | undefined;
 
-    if (!response || response.length === 0) {
+    if (!response || response.length !== 1) {
       throw UserNotFoundException;
     }
 
-    return response[0];
+    return {
+      userInfo: response[0],
+      totCount: Object.keys(input).length,
+      successCount: Object.keys(input).filter(
+        (key) => input[key] !== response[0][key],
+      ).length,
+    };
   }
 
   // only used by controller
-  async updateMyAvatar(
+  async updateAvatarById(
     userId: string,
     userName: string,
     avatarFile: Express.Multer.File,
-  ): Promise<PrivateUserInfo> {
-    const response = (await this.db
+  ): Promise<AffectedCountModel> {
+    const response = await this.db
       .update(UserInfoTable)
       .set({
         avatarURL: await this.storage.uploadAvatarFile(userName, avatarFile),
       })
       .where(eq(UserInfoTable.id, userId))
-      .returning({
-        userName: UserInfoTable.userName,
-        displayName: UserInfoTable.displayName,
-        avatarURL: UserInfoTable.avatarURL,
-        status: UserInfoTable.status,
-        inviteCode: UserInfoTable.inviteCode,
-        gender: UserInfoTable.gender,
-        birthDate: UserInfoTable.birthDate,
-        selfIntroduction: UserInfoTable.selfIntroduction,
-        updatedAt: UserInfoTable.updatedAt,
-        createdAt: UserInfoTable.createdAt,
-      })) as PrivateUserInfo[] | undefined;
-    if (!response || response.length === 0) {
+      .returning();
+
+    if (!response || response.length !== 1) {
       throw UserNotFoundException;
     }
 
-    return response[0];
+    return {
+      totCount: 1,
+      successCount: response.length,
+    };
   }
 
-  async updateMyRole(
+  async updateAccountById(
     userId: string,
-    input: UpdateMyRoleInput,
-  ): Promise<UserAccount> {
+    input: UpdateAccountInput,
+  ): Promise<AffectedCountModel> {
     const response = (await this.db
       .update(UserTable)
       .set({
         role: input.role,
-      })
-      .where(eq(UserTable.id, userId))
-      .returning({
-        userName: UserTable.userName,
-        email: UserTable.email,
-        role: UserTable.role,
-        plan: UserTable.plan,
-        userAgent: UserTable.userAgent,
-      })) as UserAccount[] | undefined;
-
-    if (!response || response.length === 0) {
-      throw UserNotFoundException;
-    }
-
-    return response[0];
-  }
-
-  async updateMyPlan(
-    userId: string,
-    input: UpdateMyPlanInput,
-  ): Promise<UserAccount> {
-    const response = (await this.db
-      .update(UserTable)
-      .set({
         plan: input.plan,
       })
       .where(eq(UserTable.id, userId))
@@ -297,19 +270,22 @@ export class UserService {
         userAgent: UserTable.userAgent,
       })) as UserAccount[] | undefined;
 
-    if (!response || response.length === 0) {
+    if (!response || response.length !== 1) {
       throw UserNotFoundException;
     }
 
-    return response[0];
+    return {
+      totCount: 1,
+      successCount: response.length,
+    };
   }
   /* ============================== Update Operations ============================== */
 
   /* ============================== Delete Operations ============================== */
-  async deleteMe(
+  async deleteOneById(
     userId: string,
-    input: DeleteMeInput,
-  ): Promise<PrivateUserInfo> {
+    input: DeleteAccountInput,
+  ): Promise<AffectedCountModel> {
     const responseOfSelectingUser = await this.db.query.UserTable.findFirst({
       where: eq(UserTable.id, userId),
       columns: {
@@ -328,27 +304,19 @@ export class UserService {
       throw AuthPasswordNotMatchException;
     }
 
-    const responseOfDeletingUser = (await this.db
+    const responseOfDeletingUser = await this.db
       .delete(UserTable)
       .where(eq(UserTable.id, userId))
-      .returning({
-        userName: UserInfoTable.userName,
-        displayName: UserInfoTable.displayName,
-        avatarURL: UserInfoTable.avatarURL,
-        status: UserInfoTable.status,
-        inviteCode: UserInfoTable.inviteCode,
-        gender: UserInfoTable.gender,
-        birthDate: UserInfoTable.birthDate,
-        selfIntroduction: UserInfoTable.selfIntroduction,
-        updatedAt: UserInfoTable.updatedAt,
-        createdAt: UserInfoTable.createdAt,
-      })) as PrivateUserInfo[] | undefined;
+      .returning();
 
-    if (!responseOfDeletingUser || responseOfDeletingUser.length === 0) {
+    if (!responseOfDeletingUser || responseOfDeletingUser.length !== 1) {
       throw UserNotFoundException;
     }
 
-    return responseOfDeletingUser[0];
+    return {
+      totCount: 1,
+      successCount: responseOfDeletingUser.length,
+    };
   }
   /* ============================== Delete Operations ============================== */
 }

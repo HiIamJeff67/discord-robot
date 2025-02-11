@@ -7,16 +7,16 @@ import {
   UsersToNotificationsTable,
 } from '../drizzle/schema/schema';
 import {
-  AuthUserHasNoPermissonException,
   CreateNotificationException,
   CreateUsersToNotificationException,
   NotificationNotFoundException,
 } from '../exceptions';
 import {
+  AffectedNotifications,
   Notification,
   PaginatedNotifications,
 } from './models/notification.model';
-import { and, count, desc, eq, gt, inArray } from 'drizzle-orm';
+import { and, count, desc, eq, gt, inArray, or } from 'drizzle-orm';
 import {
   GetNotificationInput,
   GetNotificationsInput,
@@ -24,15 +24,20 @@ import {
 import { DefaultAfterValueForSearch } from '../constants';
 import { UpdateNotificationInput } from './dto/update-notification.input';
 import { DeleteNotificationInput } from './dto/delete-notification.input';
+import { NotificationGateway } from './notification.gateway';
+import { AffectedCountModel } from '../models';
 
 @Injectable()
 export class NotificationService {
-  constructor(@Inject(DRIZZLE) private readonly db: DrizzleDB) {}
+  constructor(
+    private readonly gateway: NotificationGateway,
+    @Inject(DRIZZLE) private readonly db: DrizzleDB,
+  ) {}
 
   /* ============================== Create Operations ============================== */
-  async createNotification(
+  async createSomeByUserId(
     input: CreateNotificationInput,
-  ): Promise<Notification> {
+  ): Promise<AffectedNotifications> {
     return this.db.transaction(async (tx) => {
       const responseOfCreateNotification = (await tx
         .insert(NotificationTable)
@@ -48,6 +53,22 @@ export class NotificationService {
         responseOfCreateNotification.length === 0
       ) {
         throw CreateNotificationException;
+      }
+
+      const notificationData = {
+        id: responseOfCreateNotification[0].id,
+        title: responseOfCreateNotification[0].title,
+        content: responseOfCreateNotification[0].content,
+        type: responseOfCreateNotification[0].type,
+        linkId: responseOfCreateNotification[0].linkId,
+        isRead: responseOfCreateNotification[0].isRead,
+        updatedAt: responseOfCreateNotification[0].updatedAt,
+        createdAt: responseOfCreateNotification[0].createdAt,
+      } as Notification;
+      let successCount = 0;
+      for (const receiverId of input.to) {
+        const response = this.gateway.notifyUser(receiverId, notificationData);
+        successCount += response ? 1 : 0;
       }
 
       const responseOfCreateUsersToNotifications = await tx
@@ -66,40 +87,44 @@ export class NotificationService {
         throw CreateUsersToNotificationException;
       }
 
-      return responseOfCreateNotification[0];
+      return {
+        notification: responseOfCreateNotification[0],
+        totCount: input.to.length,
+        successCount: successCount,
+      };
     });
   }
   /* ============================== Create Operations ============================== */
 
   /* ============================== Get Operations ============================== */
-  async getMyNotification(
+  async getOneById(
     userId: string,
     input: GetNotificationInput,
   ): Promise<Notification> {
     const response = (await this.db
       .select({
-        ownerId: UsersToNotificationsTable.userId,
         id: NotificationTable.id,
         title: NotificationTable.title,
         content: NotificationTable.content,
         type: NotificationTable.type,
         linkId: NotificationTable.linkId,
-        isRead: NotificationTable.isRead,
+        isRead: UsersToNotificationsTable.isRead,
         updatedAt: NotificationTable.updatedAt,
         createdAt: NotificationTable.createdAt,
       })
-      .from(NotificationTable)
-      .where(eq(NotificationTable.id, input.notificationId))
+      .from(UsersToNotificationsTable)
+      .where(
+        and(
+          eq(UsersToNotificationsTable.notificationId, input.notificationId),
+          eq(UsersToNotificationsTable.userId, userId),
+        ),
+      )
       .leftJoin(
-        UsersToNotificationsTable,
-        eq(UsersToNotificationsTable.notificationId, NotificationTable.id),
+        NotificationTable,
+        eq(NotificationTable.id, UsersToNotificationsTable.notificationId),
       )) as (Notification & { ownerId: string })[] | undefined;
     if (!response || response.length === 0) {
       throw NotificationNotFoundException;
-    }
-
-    if (response[0].ownerId !== userId) {
-      throw AuthUserHasNoPermissonException;
     }
 
     return {
@@ -114,7 +139,7 @@ export class NotificationService {
     };
   }
 
-  async getMyNotifications(
+  async getAll(
     userId: string,
     input: GetNotificationsInput,
   ): Promise<PaginatedNotifications> {
@@ -125,7 +150,7 @@ export class NotificationService {
         content: NotificationTable.content,
         type: NotificationTable.type,
         linkId: NotificationTable.linkId,
-        isRead: NotificationTable.isRead,
+        isRead: UsersToNotificationsTable.isRead,
         updatedAt: NotificationTable.updatedAt,
         createdAt: NotificationTable.createdAt,
       })
@@ -133,12 +158,12 @@ export class NotificationService {
       .where(
         and(
           eq(UsersToNotificationsTable.userId, userId),
-          gt(NotificationTable.id, input.after),
+          gt(UsersToNotificationsTable.notificationId, input.after),
         ),
       )
       .leftJoin(
         NotificationTable,
-        eq(UsersToNotificationsTable.notificationId, NotificationTable.id),
+        eq(NotificationTable.id, UsersToNotificationsTable.notificationId),
       )
       .orderBy(desc(NotificationTable.updatedAt))
       .limit(input.first + 1)) as Notification[] | undefined;
@@ -187,44 +212,28 @@ export class NotificationService {
   /* ============================== Get Operations ============================== */
 
   /* ============================== Update Operations ============================== */
-  async updateMyNotification(
+  async updateOneById(
     userId: string,
     input: UpdateNotificationInput,
-  ): Promise<Notification> {
+  ): Promise<AffectedCountModel> {
     return this.db.transaction(async (tx) => {
-      const responseOfSelectingUsersToNotification = await tx
-        .select({
-          userId: UsersToNotificationsTable.userId,
-          notificationIda: UsersToNotificationsTable.notificationId,
-        })
-        .from(UsersToNotificationsTable)
-        .where(
-          and(
-            eq(UsersToNotificationsTable.notificationId, input.notificationId),
-            eq(UsersToNotificationsTable.userId, userId),
-          ),
-        );
-      if (
-        !responseOfSelectingUsersToNotification ||
-        responseOfSelectingUsersToNotification.length === 0
-      ) {
-        throw NotificationNotFoundException;
-      }
-
-      const responseOfSelectingNotification = (await tx
-        .update(NotificationTable)
+      const responseOfSelectingNotification = await tx
+        .update(UsersToNotificationsTable)
         .set({
           isRead: true,
         })
-        .where(eq(NotificationTable.id, input.notificationId))
-        .returning({
-          id: NotificationTable.id,
-          title: NotificationTable.title,
-          content: NotificationTable.content,
-          type: NotificationTable.type,
-          isRead: NotificationTable.isRead,
-          updatedAt: NotificationTable.updatedAt,
-        })) as Notification[] | undefined;
+        .where(
+          and(
+            eq(UsersToNotificationsTable.userId, userId),
+            eq(UsersToNotificationsTable.isRead, false),
+            or(
+              ...input.notificationIds.map((id) =>
+                eq(UsersToNotificationsTable.notificationId, id),
+              ),
+            ),
+          ),
+        )
+        .returning();
       if (
         !responseOfSelectingNotification ||
         responseOfSelectingNotification.length === 0
@@ -232,14 +241,20 @@ export class NotificationService {
         throw NotificationNotFoundException;
       }
 
-      return responseOfSelectingNotification[0];
+      return {
+        totCount: input.notificationIds.length,
+        successCount: responseOfSelectingNotification.length,
+      };
     });
   }
   /* ============================== Update Operations ============================== */
 
   /* ============================== Delete Operations ============================== */
-  async deleteMyNotifications(userId: string, input: DeleteNotificationInput) {
-    return await this.db
+  async deleteSomeById(
+    userId: string,
+    input: DeleteNotificationInput,
+  ): Promise<AffectedCountModel> {
+    const response = await this.db
       .delete(UsersToNotificationsTable)
       .where(
         and(
@@ -249,7 +264,12 @@ export class NotificationService {
             input.notificationIds,
           ),
         ),
-      );
+      )
+      .returning();
+    return {
+      totCount: input.notificationIds.length,
+      successCount: response.length,
+    };
   }
   /* ============================== Delete Operations ============================== */
 }

@@ -1,5 +1,5 @@
 import { ObjectType } from '@nestjs/graphql';
-import { AccessTokenData } from '../../models';
+import { AccessTokenDataModel } from '../../models';
 
 @ObjectType()
-export class DefaultLoginOutput extends AccessTokenData {}
+export class DefaultLoginOutput extends AccessTokenDataModel {}

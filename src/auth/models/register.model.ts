@@ -1,5 +1,5 @@
 import { ObjectType } from '@nestjs/graphql';
-import { AccessTokenData } from '../../models';
+import { AccessTokenDataModel } from '../../models';
 
 @ObjectType()
-export class DefaultRegisterOutput extends AccessTokenData {}
+export class DefaultRegisterOutput extends AccessTokenDataModel {}

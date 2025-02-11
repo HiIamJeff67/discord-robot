@@ -6,32 +6,32 @@ import { User } from '../auth/decorators';
 import { ValidateTokenDataInterface } from '../interfaces';
 import { GetRelativeUserInfosInput } from './dto/get-user-info.input';
 import { UserNotFoundException } from '../exceptions';
-import { UserAccount } from './models/user-account.model';
+import { UserAccountOutput } from './models/user-account.model';
 import {
-  PaginatedPublicUserInfos,
-  PublicUserInfo,
-  PrivateUserInfo,
+  PrivateUserInfoOutput,
+  PublicUserInfoOutput,
+  PaginatedPublicUserInfosOutput,
+  AffectedPrivateUserInfoOutput,
 } from './models/user-info.model';
-import { AccessTokenData } from '../models';
+import { AffectedCountOutput } from '../models';
 import {
-  UpdateMyInfoInput,
-  UpdateMyPlanInput,
-  UpdateMyRoleInput,
+  UpdateAccountInput,
+  UpdateInfoInput,
 } from './dto/update-user-info.input';
-import { DeleteMeInput } from './dto/delete-user.input';
+import { DeleteAccountInput } from './dto/delete-user.input';
 
 @Resolver('user')
 export class UserResolver {
   constructor(private readonly userService: UserService) {}
 
   /* ============================== Query Operations ============================== */
-  @Query(() => PrivateUserInfo)
+  @Query(() => PrivateUserInfoOutput)
   @UseGuards(JwtAnyGuard([JwtAccessGuard, JwtRefreshGuard]))
   async getMyInfo(
     @User() user: ValidateTokenDataInterface,
-  ): Promise<PrivateUserInfo & AccessTokenData> {
+  ): Promise<PrivateUserInfoOutput> {
     try {
-      const res = await this.userService.getPrivateUserInfo(user.id);
+      const res = await this.userService.getMe(user.id);
       if (!res) throw UserNotFoundException;
       return {
         ...res,
@@ -43,14 +43,14 @@ export class UserResolver {
     }
   }
 
-  @Query(() => PublicUserInfo)
+  @Query(() => PublicUserInfoOutput)
   @UseGuards(JwtAnyGuard([JwtAccessGuard, JwtRefreshGuard]))
   async getUserInfo(
     @User() user: ValidateTokenDataInterface,
     @Args('userName') userName: string,
-  ): Promise<PublicUserInfo & AccessTokenData> {
+  ): Promise<PublicUserInfoOutput> {
     try {
-      const res = await this.userService.getPublicUserInfo(userName);
+      const res = await this.userService.getOneById(userName);
       if (!res) throw UserNotFoundException;
       return {
         ...res,
@@ -62,14 +62,14 @@ export class UserResolver {
     }
   }
 
-  @Query(() => PaginatedPublicUserInfos)
+  @Query(() => PaginatedPublicUserInfosOutput)
   @UseGuards(JwtAnyGuard([JwtAccessGuard, JwtRefreshGuard]))
   async getUserInfos(
     @User() user: ValidateTokenDataInterface,
     @Args('input') input: GetRelativeUserInfosInput,
-  ): Promise<PaginatedPublicUserInfos & AccessTokenData> {
+  ): Promise<PaginatedPublicUserInfosOutput> {
     try {
-      const res = await this.userService.getRelativePublicUserInfos(input);
+      const res = await this.userService.getAllRelative(input);
       return {
         ...res,
         accessToken: user.accessTokenData.accessToken,
@@ -80,11 +80,11 @@ export class UserResolver {
     }
   }
 
-  @Query(() => UserAccount)
+  @Query(() => UserAccountOutput)
   @UseGuards(JwtAnyGuard([JwtAccessGuard, JwtRefreshGuard]))
-  async getMyAccount(
+  async findMyAccount(
     @User() user: ValidateTokenDataInterface,
-  ): Promise<UserAccount & AccessTokenData> {
+  ): Promise<UserAccountOutput> {
     try {
       return {
         userName: user.userName,
@@ -102,14 +102,14 @@ export class UserResolver {
   /* ============================== Query Operations ============================== */
 
   /* ============================== Mutation Operations ============================== */
-  @Mutation(() => PrivateUserInfo)
+  @Mutation(() => AffectedPrivateUserInfoOutput)
   @UseGuards(JwtAnyGuard([JwtAccessGuard, JwtRefreshGuard]))
   async updateMyInfo(
     @User() user: ValidateTokenDataInterface,
-    @Args('input') input: UpdateMyInfoInput,
-  ): Promise<PrivateUserInfo & AccessTokenData> {
+    @Args('input') input: UpdateInfoInput,
+  ): Promise<AffectedPrivateUserInfoOutput> {
     try {
-      const res = await this.userService.updateMyInfo(user.id, input);
+      const res = await this.userService.updateInfoById(user.id, input);
       return {
         ...res,
         accessToken: user.accessTokenData.accessToken,
@@ -120,14 +120,14 @@ export class UserResolver {
     }
   }
 
-  @Mutation(() => UserAccount)
+  @Mutation(() => AffectedCountOutput)
   @UseGuards(JwtAnyGuard([JwtAccessGuard, JwtRefreshGuard]))
-  async updateMyRole(
+  async updateMyAccount(
     @User() user: ValidateTokenDataInterface,
-    @Args('input') input: UpdateMyRoleInput,
-  ): Promise<UserAccount & AccessTokenData> {
+    @Args('input') input: UpdateAccountInput,
+  ): Promise<AffectedCountOutput> {
     try {
-      const res = await this.userService.updateMyRole(user.id, input);
+      const res = await this.userService.updateAccountById(user.id, input);
       return {
         ...res,
         accessToken: user.accessTokenData.accessToken,
@@ -138,32 +138,14 @@ export class UserResolver {
     }
   }
 
-  @Mutation(() => UserAccount)
+  @Mutation(() => AffectedCountOutput)
   @UseGuards(JwtAnyGuard([JwtAccessGuard, JwtRefreshGuard]))
-  async updateMyPlan(
+  async deleteMyAccount(
     @User() user: ValidateTokenDataInterface,
-    @Args('input') input: UpdateMyPlanInput,
-  ): Promise<UserAccount & AccessTokenData> {
+    @Args('input') input: DeleteAccountInput,
+  ): Promise<AffectedCountOutput> {
     try {
-      const res = await this.userService.updateMyPlan(user.id, input);
-      return {
-        ...res,
-        accessToken: user.accessTokenData.accessToken,
-        expiresIn: user.accessTokenData.expiresIn,
-      };
-    } catch (error) {
-      throw error;
-    }
-  }
-
-  @Mutation(() => PrivateUserInfo)
-  @UseGuards(JwtAnyGuard([JwtAccessGuard, JwtRefreshGuard]))
-  async deleteMe(
-    @User() user: ValidateTokenDataInterface,
-    @Args('input') input: DeleteMeInput,
-  ): Promise<PrivateUserInfo & AccessTokenData> {
-    try {
-      const res = await this.userService.deleteMe(user.id, input);
+      const res = await this.userService.deleteOneById(user.id, input);
       return {
         ...res,
         accessToken: user.accessTokenData.accessToken,

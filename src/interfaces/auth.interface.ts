@@ -1,4 +1,4 @@
-import { UserPlanType, UserRoleType } from '../types';
+import { UserPlanType, UserRoleType, UserStatusType } from '../types';
 
 export interface AccessTokenInterface {
   accessToken: string;
@@ -34,6 +34,7 @@ export interface ValidateTokenDataInterface {
   userName: string;
   email: string;
   userAgent: string;
+  status: UserStatusType;
   role: UserRoleType; // re-generate the token while updating the role
   plan: UserPlanType; // re-generate the token while updating the plan
   accessTokenData: AccessTokenInterface;

@@ -18,7 +18,6 @@ export const NotificationTable = pgTable(
     content: text('content').notNull(),
     type: NotificationTypeEnum('type'),
     linkId: text('linkId'),
-    isRead: boolean('isRead').notNull().default(false),
     updatedAt: timestamp('updatedAt')
       .notNull()
       .defaultNow()

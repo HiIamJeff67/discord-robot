@@ -1,4 +1,4 @@
-import { Field, ObjectType } from '@nestjs/graphql';
+import { Field, IntersectionType, ObjectType } from '@nestjs/graphql';
 import {
   UserPlanType,
   UserPlanValues,
@@ -8,10 +8,9 @@ import {
 import { IsEmail, IsIn, MaxLength, MinLength } from 'class-validator';
 import { MaxUserNameLength, MinUserNameLength } from '../../constants';
 import { UserPlanEnum, UserRoleEnum } from '../../enums';
+import { AccessTokenDataModel } from '../../models';
 
-@ObjectType()
-export class PublicUserAccount {}
-
+/* ============================== Type Models ============================== */
 @ObjectType()
 export class UserAccount {
   @Field(() => String)
@@ -34,3 +33,12 @@ export class UserAccount {
   @Field(() => String)
   userAgent: string;
 }
+/* ============================== Type Models ============================== */
+
+/* ============================== Output Models ============================== */
+@ObjectType()
+export class UserAccountOutput extends IntersectionType(
+  UserAccount,
+  AccessTokenDataModel,
+) {}
+/* ============================== Output Models ============================== */

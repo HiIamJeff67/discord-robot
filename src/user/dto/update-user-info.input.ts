@@ -10,17 +10,14 @@ import {
 } from '../../types';
 
 @InputType()
-export class UpdateMyInfoInput extends PartialType(CreateMyInfoInput) {}
+export class UpdateInfoInput extends PartialType(CreateMyInfoInput) {}
 
 @InputType()
-export class UpdateMyRoleInput {
+export class UpdateAccountInput {
   @Field(() => UserRoleEnum)
   @IsIn(UserRoleValues)
   role: UserRoleType;
-}
 
-@InputType()
-export class UpdateMyPlanInput {
   @Field(() => UserPlanEnum)
   @IsIn(UserPlanValues)
   plan: UserPlanType;

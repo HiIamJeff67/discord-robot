@@ -13,7 +13,9 @@ export interface IPaginatedType<T> {
   hasPrevPage: boolean;
 }
 
-export function Paginated<T>(classRef: Type<T>): Type<IPaginatedType<T>> {
+export function getPaginatedModel<T>(
+  classRef: Type<T>,
+): Type<IPaginatedType<T>> {
   @ObjectType(`${classRef.name}Edge`)
   abstract class EdgeType {
     @Field(() => String)

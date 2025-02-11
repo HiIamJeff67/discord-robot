@@ -1,4 +1,10 @@
-import { Field, GraphQLISODateTime, Int, ObjectType } from '@nestjs/graphql';
+import {
+  Field,
+  GraphQLISODateTime,
+  Int,
+  IntersectionType,
+  ObjectType,
+} from '@nestjs/graphql';
 import {
   MaxDisplayNameLength,
   MaxSelfIntroductionLength,
@@ -17,8 +23,13 @@ import {
 } from 'class-validator';
 import { UserGenderEnum, UserStatusEnum } from '../../enums';
 import { UserGenderType, UserStatusType, UserStatusValues } from '../../types';
-import { Paginated } from '../../models';
+import {
+  AccessTokenDataModel,
+  AffectedCountModel,
+  getPaginatedModel,
+} from '../../models';
 
+/* ============================== Type Models ============================== */
 @ObjectType()
 export class PublicUserInfo {
   @Field(() => String)
@@ -68,9 +79,6 @@ export class PublicUserInfo {
 @ObjectType()
 export class PrivateUserInfo {
   @Field(() => String)
-  userId: string;
-
-  @Field(() => String)
   @MinLength(MinUserNameLength)
   @MaxLength(MaxUserNameLength)
   userName: string;
@@ -115,4 +123,39 @@ export class PrivateUserInfo {
 }
 
 @ObjectType()
-export class PaginatedPublicUserInfos extends Paginated(PublicUserInfo) {}
+export class AffectedPrivateUserInfo extends AffectedCountModel {
+  @Field(() => PrivateUserInfo)
+  userInfo: PrivateUserInfo;
+}
+
+@ObjectType()
+export class PaginatedPublicUserInfos extends getPaginatedModel(
+  PublicUserInfo,
+) {}
+/* ============================== Type Models ============================== */
+
+/* ============================== Output Models ============================== */
+@ObjectType()
+export class PublicUserInfoOutput extends IntersectionType(
+  PublicUserInfo,
+  AccessTokenDataModel,
+) {}
+
+@ObjectType()
+export class PrivateUserInfoOutput extends IntersectionType(
+  PrivateUserInfo,
+  AccessTokenDataModel,
+) {}
+
+@ObjectType()
+export class AffectedPrivateUserInfoOutput extends IntersectionType(
+  AffectedPrivateUserInfo,
+  AccessTokenDataModel,
+) {}
+
+@ObjectType()
+export class PaginatedPublicUserInfosOutput extends IntersectionType(
+  PaginatedPublicUserInfos,
+  AccessTokenDataModel,
+) {}
+/* ============================== Output Models ============================== */

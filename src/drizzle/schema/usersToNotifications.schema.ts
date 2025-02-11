@@ -1,4 +1,4 @@
-import { index, pgTable, primaryKey, uuid } from 'drizzle-orm/pg-core';
+import { boolean, index, pgTable, primaryKey, uuid } from 'drizzle-orm/pg-core';
 import { UserTable } from './user.schema';
 import { NotificationTable } from './notification.schema';
 import { relations } from 'drizzle-orm';
@@ -16,6 +16,7 @@ export const UsersToNotificationsTable = pgTable(
         onDelete: 'cascade',
       })
       .notNull(),
+    isRead: boolean('isRead').notNull().default(false),
   },
   (table) => {
     return {

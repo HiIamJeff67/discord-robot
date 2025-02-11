@@ -2,6 +2,37 @@
 # THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 # ------------------------------------------------------
 
+type AffectedCountOutput {
+  accessToken: String!
+  expiresIn: String!
+  successCount: Int!
+  totCount: Int!
+}
+
+type AffectedNotificationsOutput {
+  accessToken: String!
+  expiresIn: String!
+  notification: Notification!
+  successCount: Int!
+  totCount: Int!
+}
+
+type AffectedPrivateUserInfoOutput {
+  accessToken: String!
+  expiresIn: String!
+  successCount: Int!
+  totCount: Int!
+  userInfo: PrivateUserInfo!
+}
+
+input CreateNotificationInput {
+  content: String!
+  linkId: String
+  title: String!
+  to: [String!]!
+  type: NotificationEnum
+}
+
 """
 A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
 """
@@ -29,8 +60,12 @@ type DefaultRegisterOutput {
   expiresIn: String!
 }
 
-input DeleteMeInput {
+input DeleteAccountInput {
   password: String!
+}
+
+input DeleteNotificationInput {
+  notificationIds: [String!]!
 }
 
 input FilterOptions {
@@ -59,12 +94,14 @@ input GetRelativeUserInfosInput {
 }
 
 type Mutation {
+  createNofications(input: CreateNotificationInput!): AffectedNotificationsOutput!
   defaultLogin(input: DefaultLoginInput!): DefaultLoginOutput!
   defaultRegister(input: DefaultRegisterInput!): DefaultRegisterOutput!
-  deleteMe(input: DeleteMeInput!): PrivateUserInfo!
-  updateMyInfo(input: UpdateMyInfoInput!): PrivateUserInfo!
-  updateMyPlan(input: UpdateMyPlanInput!): UserAccount!
-  updateMyRole(input: UpdateMyRoleInput!): UserAccount!
+  deleteMyAccount(input: DeleteAccountInput!): AffectedCountOutput!
+  deleteMyNotifications(input: DeleteNotificationInput!): AffectedCountOutput!
+  updateMyAccount(input: UpdateAccountInput!): AffectedCountOutput!
+  updateMyInfo(input: UpdateInfoInput!): AffectedPrivateUserInfoOutput!
+  updateMyNotifications(input: UpdateNotificationInput!): AffectedCountOutput!
 }
 
 type Notification {
@@ -90,15 +127,32 @@ enum NotificationEnum {
   System
 }
 
-type PaginatedNotifications {
+type NotificationOutput {
+  accessToken: String!
+  content: String!
+  createdAt: DateTime!
+  expiresIn: String!
+  id: String!
+  isRead: Boolean!
+  linkId: String
+  title: String!
+  type: NotificationEnum
+  updatedAt: DateTime!
+}
+
+type PaginatedNotificationsOutput {
+  accessToken: String!
   edges: [NotificationEdge!]
+  expiresIn: String!
   hasNextPage: Boolean!
   hasPrevPage: Boolean!
   totalCount: Int!
 }
 
-type PaginatedPublicUserInfos {
+type PaginatedPublicUserInfosOutput {
+  accessToken: String!
   edges: [PublicUserInfoEdge!]
+  expiresIn: String!
   hasNextPage: Boolean!
   hasPrevPage: Boolean!
   totalCount: Int!
@@ -114,7 +168,21 @@ type PrivateUserInfo {
   selfIntroduction: String
   status: UserStatusEnum!
   updatedAt: DateTime!
-  userId: String!
+  userName: String!
+}
+
+type PrivateUserInfoOutput {
+  accessToken: String!
+  avatarURL: String
+  birthDate: DateTime
+  createdAt: DateTime!
+  displayName: String!
+  expiresIn: String!
+  gender: UserGenderEnum!
+  inviteCode: Int!
+  selfIntroduction: String
+  status: UserStatusEnum!
+  updatedAt: DateTime!
   userName: String!
 }
 
@@ -136,14 +204,29 @@ type PublicUserInfoEdge {
   node: PublicUserInfo!
 }
 
+type PublicUserInfoOutput {
+  accessToken: String!
+  avatarURL: String
+  birthDate: DateTime
+  createdAt: DateTime!
+  displayName: String!
+  expiresIn: String!
+  gender: UserGenderEnum!
+  inviteCode: Int!
+  selfIntroduction: String
+  status: UserStatusEnum!
+  updatedAt: DateTime!
+  userName: String!
+}
+
 type Query {
-  getMyAccount: UserAccount!
+  findMyAccount: UserAccountOutput!
   getMyAuth: UserAuth!
-  getMyInfo: PrivateUserInfo!
-  getMyNotification(input: GetNotificationInput!): Notification!
-  getMyNotifications(input: GetNotificationsInput!): PaginatedNotifications!
-  getUserInfo(userName: String!): PublicUserInfo!
-  getUserInfos(input: GetRelativeUserInfosInput!): PaginatedPublicUserInfos!
+  getMyInfo: PrivateUserInfoOutput!
+  getMyNotification(input: GetNotificationInput!): NotificationOutput!
+  getMyNotifications(input: GetNotificationsInput!): PaginatedNotificationsOutput!
+  getUserInfo(userName: String!): PublicUserInfoOutput!
+  getUserInfos(input: GetRelativeUserInfosInput!): PaginatedPublicUserInfosOutput!
 }
 
 enum SearchOrderEnum {
@@ -163,11 +246,12 @@ input SortOptions {
   byUpdatedAt: SearchOrderEnum! = Descending
 }
 
-type Subscription {
-  registerNotificationSubscription: String!
+input UpdateAccountInput {
+  plan: UserPlanEnum!
+  role: UserRoleEnum!
 }
 
-input UpdateMyInfoInput {
+input UpdateInfoInput {
   birthDate: DateTime
   displayName: String
   gender: UserGenderEnum
@@ -175,16 +259,14 @@ input UpdateMyInfoInput {
   status: UserStatusEnum
 }
 
-input UpdateMyPlanInput {
-  plan: UserPlanEnum!
+input UpdateNotificationInput {
+  notificationIds: [String!]!
 }
 
-input UpdateMyRoleInput {
-  role: UserRoleEnum!
-}
-
-type UserAccount {
+type UserAccountOutput {
+  accessToken: String!
   email: String!
+  expiresIn: String!
   plan: UserPlanEnum!
   role: UserRoleEnum!
   userAgent: String!

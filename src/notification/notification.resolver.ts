@@ -1,8 +1,9 @@
-import { Args, Query, Resolver, Subscription } from '@nestjs/graphql';
+import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { NotificationService } from './notification.service';
 import {
-  Notification,
-  PaginatedNotifications,
+  AffectedNotificationsOutput,
+  NotificationOutput,
+  PaginatedNotificationsOutput,
 } from './models/notification.model';
 import { UseGuards } from '@nestjs/common';
 import { JwtAccessGuard, JwtAnyGuard, JwtRefreshGuard } from '../auth/guards';
@@ -12,29 +13,27 @@ import {
   GetNotificationInput,
   GetNotificationsInput,
 } from './dto/get-notification.input';
-import { AccessTokenData } from '../models';
-import { PubSub } from 'graphql-subscriptions';
-import { getNotificationSubscriptionChannelName } from '../utils';
-
-// initial publish subscription here, so it will not re-create one for every user
-const pubSub = new PubSub();
+import { AffectedCountOutput } from '../models';
+import { CreateNotificationInput } from './dto/create-notification.input';
+import { UpdateNotificationInput } from './dto/update-notification.input';
+import { DeleteNotificationInput } from './dto/delete-notification.input';
+import { AllowedRoles } from '../auth/decorators/allowed-roles.decorator';
+import { UserRoleEnum } from '../enums';
+import { UserRolesGuard } from '../auth/guards/user-role.guard';
 
 @Resolver()
 export class NotificationResolver {
   constructor(private readonly notificationService: NotificationService) {}
 
   /* ============================== Query Operations ============================== */
-  @Query(() => Notification)
+  @Query(() => NotificationOutput)
   @UseGuards(JwtAnyGuard([JwtAccessGuard, JwtRefreshGuard]))
   async getMyNotification(
     @User() user: ValidateTokenDataInterface,
     @Args('input') input: GetNotificationInput,
-  ): Promise<Notification & AccessTokenData> {
+  ): Promise<NotificationOutput> {
     try {
-      const res = await this.notificationService.getMyNotification(
-        user.id,
-        input,
-      );
+      const res = await this.notificationService.getOneById(user.id, input);
       return {
         ...res,
         accessToken: user.accessTokenData.accessToken,
@@ -45,17 +44,14 @@ export class NotificationResolver {
     }
   }
 
-  @Query(() => PaginatedNotifications)
+  @Query(() => PaginatedNotificationsOutput)
   @UseGuards(JwtAnyGuard([JwtAccessGuard, JwtRefreshGuard]))
   async getMyNotifications(
     @User() user: ValidateTokenDataInterface,
     @Args('input') input: GetNotificationsInput,
-  ): Promise<PaginatedNotifications & AccessTokenData> {
+  ): Promise<PaginatedNotificationsOutput> {
     try {
-      const res = await this.notificationService.getMyNotifications(
-        user.id,
-        input,
-      );
+      const res = await this.notificationService.getAll(user.id, input);
       return {
         ...res,
         accessToken: user.accessTokenData.accessToken,
@@ -68,18 +64,61 @@ export class NotificationResolver {
   /* ============================== Query Operations ============================== */
 
   /* ============================== Mutation Operations ============================== */
-
-  /* ============================== Mutation Operations ============================== */
-
-  /* ============================== Subscription Operations ============================== */
-  @Subscription(() => String, {
-    filter: (payload, variable) => payload.receiverId === variable.user.id,
-  })
-  @UseGuards(JwtAnyGuard([JwtAccessGuard, JwtRefreshGuard]))
-  registerNotificationSubscription(@User() user: ValidateTokenDataInterface) {
-    return pubSub.asyncIterableIterator(
-      getNotificationSubscriptionChannelName(user.id),
-    );
+  @Mutation(() => AffectedNotificationsOutput)
+  @AllowedRoles([UserRoleEnum.Developer, UserRoleEnum.Admin]) // probably for devOps
+  @UseGuards(JwtAnyGuard([JwtAccessGuard, JwtRefreshGuard]), UserRolesGuard)
+  async createNofications(
+    @User() user: ValidateTokenDataInterface,
+    @Args('input') input: CreateNotificationInput,
+  ): Promise<AffectedNotificationsOutput> {
+    try {
+      const res = await this.notificationService.createSomeByUserId(input);
+      return {
+        ...res,
+        accessToken: user.accessTokenData.accessToken,
+        expiresIn: user.accessTokenData.expiresIn,
+      };
+    } catch (error) {
+      throw error;
+    }
   }
-  /* ============================== Subscription Operations ============================== */
+
+  @Mutation(() => AffectedCountOutput)
+  @UseGuards(JwtAnyGuard([JwtAccessGuard, JwtRefreshGuard]))
+  async updateMyNotifications(
+    @User() user: ValidateTokenDataInterface,
+    @Args('input') input: UpdateNotificationInput,
+  ): Promise<AffectedCountOutput> {
+    try {
+      const res = await this.notificationService.updateOneById(user.id, input);
+
+      return {
+        ...res,
+        accessToken: user.accessTokenData.accessToken,
+        expiresIn: user.accessTokenData.expiresIn,
+      };
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  @Mutation(() => AffectedCountOutput)
+  @UseGuards(JwtAnyGuard([JwtAccessGuard, JwtRefreshGuard]))
+  async deleteMyNotifications(
+    @User() user: ValidateTokenDataInterface,
+    @Args('input') input: DeleteNotificationInput,
+  ): Promise<AffectedCountOutput> {
+    try {
+      const res = await this.notificationService.deleteSomeById(user.id, input);
+
+      return {
+        ...res,
+        accessToken: user.accessTokenData.accessToken,
+        expiresIn: user.accessTokenData.expiresIn,
+      };
+    } catch (error) {
+      throw error;
+    }
+  }
+  /* ============================== Mutation Operations ============================== */
 }

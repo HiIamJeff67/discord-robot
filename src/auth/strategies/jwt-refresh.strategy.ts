@@ -20,9 +20,10 @@ import {
 import { extractRefreshTokenFromCookies } from '../../cookie/extractors';
 import { UserTable } from '../../drizzle/schema/user.schema';
 import { eq } from 'drizzle-orm';
-import { UserPlanType, UserRoleType } from '../../types';
+import { UserPlanType, UserRoleType, UserStatusType } from '../../types';
 import { SecureGeneratorService } from '../../secret-generator/secret-generator.service';
 import jwtRefreshConfig from '../configs/jwt-refresh.config';
+import { UserInfoTable } from '../../drizzle/schema/userInfo.schema';
 
 @Injectable()
 export class JwtRefreshStrategy extends PassportStrategy(
@@ -59,50 +60,53 @@ export class JwtRefreshStrategy extends PassportStrategy(
       throw AuthMissingTokenException;
     }
 
-    const user = (await this.db.query.UserTable.findFirst({
-      where: eq(UserTable.id, payload.sub),
-      columns: {
-        id: true,
-        userName: true,
-        email: true,
-        userAgent: true,
-        role: true,
-        plan: true,
-      },
-    })) as
+    const user = (await this.db
+      .select({
+        id: UserTable.id,
+        userName: UserTable.userName,
+        email: UserTable.email,
+        userAgent: UserTable.userAgent,
+        status: UserInfoTable.status,
+        role: UserTable.role,
+        plan: UserTable.plan,
+      })
+      .from(UserTable)
+      .where(eq(UserTable.id, payload.sub))
+      .leftJoin(UserInfoTable, eq(UserInfoTable.userId, UserTable.id))) as
       | {
           id: string;
           userName: string;
           email: string;
           userAgent: string;
+          status: UserStatusType;
           role: UserRoleType;
           plan: UserPlanType;
-        }
+        }[]
       | undefined;
-    if (!user) {
+    if (!user || user.length === 0) {
       throw AuthInvalidRefreshTokenException;
     }
-    if (user.userAgent !== request.headers['user-agent']) {
+    if (user[0].userAgent !== request.headers['user-agent']) {
       throw AuthUserAgentNotMatchException;
     }
 
     const newAccessTokenData =
       await this.secureGeneratorService.generateAccessToken({
-        sub: user.id,
-        email: user.email,
-        role: user.role,
-        plan: user.plan,
+        sub: user[0].id,
+        email: user[0].email,
+        role: user[0].role,
+        plan: user[0].plan,
       });
     const responseOfSettingCache = await this.accessTokenCacheManager.set(
       newAccessTokenData,
-      user,
+      user[0],
     );
     if (!responseOfSettingCache) {
       throw ApiRefreshAccessTokenException;
     }
 
     return {
-      ...user,
+      ...user[0],
       accessTokenData: newAccessTokenData,
     };
   }

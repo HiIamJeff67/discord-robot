@@ -64,6 +64,27 @@
       "when": 1739103765318,
       "tag": "0008_orange_amphibian",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1739247027647,
+      "tag": "0009_steady_chimera",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1739250085500,
+      "tag": "0010_wild_pet_avengers",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1739257719516,
+      "tag": "0011_talented_white_tiger",
+      "breakpoints": true
     }
   ]
 }

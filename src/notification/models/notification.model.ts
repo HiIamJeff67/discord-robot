@@ -1,9 +1,19 @@
-import { Field, GraphQLISODateTime, ObjectType } from '@nestjs/graphql';
+import {
+  Field,
+  GraphQLISODateTime,
+  IntersectionType,
+  ObjectType,
+} from '@nestjs/graphql';
 import { IsDate, IsIn } from 'class-validator';
 import { NotificationEnum } from '../../enums';
 import { NotificationType, NotificationValues } from '../../types';
-import { Paginated } from '../../models';
+import {
+  AccessTokenDataModel,
+  AffectedCountModel,
+  getPaginatedModel,
+} from '../../models';
 
+/* ============================== Type Models ============================== */
 @ObjectType()
 export class Notification {
   @Field(() => String)
@@ -35,4 +45,31 @@ export class Notification {
 }
 
 @ObjectType()
-export class PaginatedNotifications extends Paginated(Notification) {}
+export class AffectedNotifications extends AffectedCountModel {
+  @Field(() => Notification)
+  notification: Notification;
+}
+
+@ObjectType()
+export class PaginatedNotifications extends getPaginatedModel(Notification) {}
+/* ============================== Type Models ============================== */
+
+/* ============================== Output Models ============================== */
+@ObjectType()
+export class NotificationOutput extends IntersectionType(
+  Notification,
+  AccessTokenDataModel,
+) {}
+
+@ObjectType()
+export class AffectedNotificationsOutput extends IntersectionType(
+  AffectedNotifications,
+  AccessTokenDataModel,
+) {}
+
+@ObjectType()
+export class PaginatedNotificationsOutput extends IntersectionType(
+  PaginatedNotifications,
+  AccessTokenDataModel,
+) {}
+/* ============================== Output Models ============================== */

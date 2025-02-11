@@ -22,7 +22,7 @@ import { AccessTokenCacheManager } from '../access-token-cache/access-token-cach
 import { CacheSetAccessTokenException } from '../exceptions/cache.exception';
 import { DefaultRegisterInput } from './dto/register.input';
 import { DefaultLoginInput } from './dto/login.input';
-import { UserPlanType, UserRoleType } from '../types';
+import { UserPlanType, UserRoleType, UserStatusType } from '../types';
 import { SetAccessTokenCacheInterface } from '../interfaces';
 
 @Injectable()
@@ -60,42 +60,18 @@ export class AuthService {
           userAgent: UserTable.userAgent,
           role: UserTable.role,
           plan: UserTable.plan,
-        })) as SetAccessTokenCacheInterface[];
+        })) as
+        | {
+            id: string;
+            userName: string;
+            email: string;
+            userAgent: string;
+            role: UserRoleType;
+            plan: UserPlanType;
+          }[]
+        | undefined;
       if (!responseOfCreatingUser || responseOfCreatingUser.length === 0) {
         throw CreateUserException;
-      }
-
-      const accessTokenData =
-        await this.secureGeneratorService.generateAccessToken({
-          sub: responseOfCreatingUser[0].id,
-          email: responseOfCreatingUser[0].email,
-          role: responseOfCreatingUser[0].role,
-          plan: responseOfCreatingUser[0].plan,
-        });
-      const refreshTokenData =
-        await this.secureGeneratorService.generateRefreshToken({
-          sub: responseOfCreatingUser[0].id,
-          email: responseOfCreatingUser[0].email,
-          role: responseOfCreatingUser[0].role,
-          plan: responseOfCreatingUser[0].plan,
-        });
-
-      const responseOfSettingCache = await this.accessTokenCacheManager.set(
-        accessTokenData,
-        responseOfCreatingUser[0],
-      );
-      if (!responseOfSettingCache) {
-        throw CacheSetAccessTokenException;
-      }
-      const responseOfUpdatingUser = await tx
-        .update(UserTable)
-        .set({
-          refreshToken: refreshTokenData.refreshToken,
-          userAgent: userAgent,
-        })
-        .returning();
-      if (!responseOfUpdatingUser || responseOfUpdatingUser.length === 0) {
-        throw UserNotFoundException;
       }
 
       const responseOfCreatingUserInfo = await tx
@@ -128,6 +104,42 @@ export class AuthService {
         throw CreateUserAuthException;
       }
 
+      const accessTokenData =
+        await this.secureGeneratorService.generateAccessToken({
+          sub: responseOfCreatingUser[0].id,
+          email: responseOfCreatingUser[0].email,
+          role: responseOfCreatingUser[0].role,
+          plan: responseOfCreatingUser[0].plan,
+        });
+      const refreshTokenData =
+        await this.secureGeneratorService.generateRefreshToken({
+          sub: responseOfCreatingUser[0].id,
+          email: responseOfCreatingUser[0].email,
+          role: responseOfCreatingUser[0].role,
+          plan: responseOfCreatingUser[0].plan,
+        });
+
+      const responseOfSettingCache = await this.accessTokenCacheManager.set(
+        accessTokenData,
+        {
+          ...responseOfCreatingUser[0],
+          status: responseOfCreatingUserInfo[0].status as UserStatusType,
+        },
+      );
+      if (!responseOfSettingCache) {
+        throw CacheSetAccessTokenException;
+      }
+      const responseOfUpdatingUser = await tx
+        .update(UserTable)
+        .set({
+          refreshToken: refreshTokenData.refreshToken,
+          userAgent: userAgent,
+        })
+        .returning();
+      if (!responseOfUpdatingUser || responseOfUpdatingUser.length === 0) {
+        throw UserNotFoundException;
+      }
+
       return {
         accessTokenData: accessTokenData,
         refreshTokenData: refreshTokenData,
@@ -142,6 +154,7 @@ export class AuthService {
           id: UserTable.id,
           userName: UserTable.userName,
           email: UserTable.email,
+          status: UserInfoTable.status,
           role: UserTable.role,
           plan: UserTable.plan,
           userAgent: UserTable.userAgent,
@@ -152,11 +165,13 @@ export class AuthService {
           isEmail(input.account)
             ? eq(UserTable.email, input.account)
             : eq(UserTable.userName, input.account),
-        )) as {
+        )
+        .leftJoin(UserInfoTable, eq(UserInfoTable.userId, UserTable.id))) as {
         id: string;
         userName: string;
         email: string;
         userAgent: string;
+        status: UserStatusType;
         role: UserRoleType;
         plan: UserPlanType;
         password: string;

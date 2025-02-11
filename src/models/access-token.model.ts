@@ -3,7 +3,7 @@ import { Matches } from 'class-validator';
 import { TokenExpireTimeRegex } from '../regexs';
 
 @ObjectType()
-export class AccessTokenData {
+export class AccessTokenDataModel {
   @Field()
   accessToken: string;
 

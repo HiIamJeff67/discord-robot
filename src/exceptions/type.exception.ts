@@ -32,7 +32,7 @@ export const TypeTokenExpiredTimeFormException = new NotAcceptableException({
   message: 'The form of the expiresIn column is invalid',
 });
 
-export const TypeMimeTypeInvalidException = (
+export const TypeInvalidMimeTypeException = (
   mimeType: MimeType,
   validMimeTypes: MimeType[],
 ) =>
@@ -40,3 +40,8 @@ export const TypeMimeTypeInvalidException = (
     case: 'E-Type-007',
     message: `The given mime type ${mimeType} is invalid, valid mime types: ${validMimeTypes}`,
   });
+
+export const TypeInvalidTimeZoneException = new NotAcceptableException({
+  case: 'E-Type-008',
+  message: 'The given time zone is invalid',
+});

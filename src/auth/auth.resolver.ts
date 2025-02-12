@@ -19,12 +19,22 @@ export class AuthResolver {
     @Context() context: any,
   ): Promise<DefaultRegisterOutput> {
     const userAgent = context.req.headers['user-agent'];
-    const response = await this.authService.defaultRegister(input, userAgent);
+    const acceptLanguage = context.req.headers.acceptLanguage;
+    const response = await this.authService.defaultRegister(
+      input,
+      userAgent,
+      acceptLanguage,
+    );
     this.cookieService.storeRefreshTokenCookie(
       response.refreshTokenData.refreshToken,
       context.res,
     );
-    return response.accessTokenData;
+    return {
+      ...response.accessTokenData,
+      language: response.language,
+      timeZone: response.timeZone,
+      theme: response.theme,
+    };
   }
 
   @Mutation(() => DefaultLoginOutput)
@@ -38,6 +48,11 @@ export class AuthResolver {
       response.refreshTokenData.refreshToken,
       context.res,
     );
-    return response.accessTokenData;
+    return {
+      ...response.accessTokenData,
+      language: response.language,
+      timeZone: response.timeZone,
+      theme: response.theme,
+    };
   }
 }

@@ -24,6 +24,7 @@ import { UserPlanType, UserRoleType, UserStatusType } from '../../types';
 import { SecureGeneratorService } from '../../secret-generator/secret-generator.service';
 import jwtRefreshConfig from '../configs/jwt-refresh.config';
 import { UserInfoTable } from '../../drizzle/schema/userInfo.schema';
+import { UserSettingTable } from '../../drizzle/schema/userSetting.schema';
 
 @Injectable()
 export class JwtRefreshStrategy extends PassportStrategy(
@@ -69,10 +70,16 @@ export class JwtRefreshStrategy extends PassportStrategy(
         status: UserInfoTable.status,
         role: UserTable.role,
         plan: UserTable.plan,
+        generalSettingsCode: UserSettingTable.generalSettingsCode,
+        privacySettingsCode: UserSettingTable.privacySettingsCode,
       })
       .from(UserTable)
       .where(eq(UserTable.id, payload.sub))
-      .leftJoin(UserInfoTable, eq(UserInfoTable.userId, UserTable.id))) as
+      .leftJoin(UserInfoTable, eq(UserInfoTable.userId, UserTable.id))
+      .leftJoin(
+        UserSettingTable,
+        eq(UserSettingTable.userId, UserTable.id),
+      )) as
       | {
           id: string;
           userName: string;
@@ -81,6 +88,8 @@ export class JwtRefreshStrategy extends PassportStrategy(
           status: UserStatusType;
           role: UserRoleType;
           plan: UserPlanType;
+          generalSettingsCode: number;
+          privacySettingsCode: number;
         }[]
       | undefined;
     if (!user || user.length === 0) {

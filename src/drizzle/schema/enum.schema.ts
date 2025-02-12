@@ -14,24 +14,35 @@ import {
   UsersToUsersStatusValues,
   UserRoleValues,
   UserStatusValues,
+  LanguageValues,
+  ThemeValues,
+  TimeZoneValues,
 } from '../../types';
 
 /* ================================= Status Enums ================================= */
-export const UserStatusEnum = pgEnum('userStatus', UserStatusValues);
+export const UserStatusPgEnum = pgEnum('userStatusEnum', UserStatusValues);
 
-export const UserGenderEnum = pgEnum('userGender', UserGenderValues);
+export const UserGenderPgEnum = pgEnum('userGenderEnum', UserGenderValues);
 
-export const UserRoleEnum = pgEnum('userRole', UserRoleValues);
+export const UserRolePgEnum = pgEnum('userRoleEnum', UserRoleValues);
 
-export const UserPlanEnum = pgEnum('userPlan', UserPlanValues);
+export const UserPlanPgEnum = pgEnum('userPlanEnum', UserPlanValues);
 
-export const NotificationTypeEnum = pgEnum(
-  'notificationType',
+export const NotificationTypePgEnum = pgEnum(
+  'notificationTypeEnum',
   NotificationValues,
 );
 
-export const UsersToUsersStatusEnum = pgEnum(
-  'usersToUsersStatus',
+export const UsersToUsersStatusPgEnum = pgEnum(
+  'usersToUsersStatusEnum',
   UsersToUsersStatusValues,
 );
 /* ================================= Status Enums ================================= */
+
+/* ================================= Setting Enums ================================= */
+export const LanguagePgEnum = pgEnum('languageEnum', LanguageValues);
+
+export const ThemePgEnum = pgEnum('themeEnum', ThemeValues);
+
+export const TimeZonePgEnum = pgEnum('timeZoneEnum', TimeZoneValues);
+/* ================================= Setting Enums ================================= */

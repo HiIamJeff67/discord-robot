@@ -6,11 +6,8 @@ import { SupabaseStorageService } from '../supabase-storage/supabase-storage.ser
 import { and, asc, count, desc, eq, gt, like, SQL } from 'drizzle-orm';
 import { UserInfoTable } from '../drizzle/schema/userInfo.schema';
 import { UserTable } from '../drizzle/schema/user.schema';
-import {
-  UpdateAccountInput,
-  UpdateInfoInput,
-} from './dto/update-user-info.input';
-import { DeleteAccountInput } from './dto/delete-user.input';
+import { UpdateUserInfoInput } from './dto/update-user-info.input';
+import { DeleteAccountInput } from './dto/delete-user-info.input';
 import { GetRelativeUserInfosInput } from './dto/get-user-info.input';
 import {
   AffectedPrivateUserInfo,
@@ -18,24 +15,27 @@ import {
   PrivateUserInfo,
   PublicUserInfo,
 } from './models/user-info.model';
-import { UserAccount } from './models/user-account.model';
 import { AffectedCountModel } from '../models';
 import {
   AuthPasswordNotMatchException,
+  CacheUpdateAccessTokenException,
   UserNotFoundException,
 } from '../exceptions';
 import { SearchOrderEnum } from '../enums';
 import { DefaultAfterValueForSearch } from '../constants';
+import { AccessTokenInterface } from '../interfaces';
+import { AccessTokenCacheManager } from '../access-token-cache/access-token-cache.manager';
 
 @Injectable()
-export class UserService {
+export class UserInfoService {
   constructor(
     private readonly storage: SupabaseStorageService,
+    private readonly accessTokenCacheManager: AccessTokenCacheManager,
     @Inject(DRIZZLE) private readonly db: DrizzleDB,
   ) {}
 
   /* ============================== Get Operations ============================== */
-  async getMe(userId: string): Promise<PrivateUserInfo | undefined> {
+  async getOneByUserId(userId: string): Promise<PrivateUserInfo | undefined> {
     const response = (await this.db.query.UserInfoTable.findFirst({
       where: eq(UserInfoTable.userId, userId),
       columns: {
@@ -58,7 +58,7 @@ export class UserService {
     return response;
   }
 
-  async getOneById(userName: string): Promise<PublicUserInfo> {
+  async getOneByUserName(userName: string): Promise<PublicUserInfo> {
     const response = (await this.db.query.UserInfoTable.findFirst({
       where: eq(UserInfoTable.userName, userName),
       columns: {
@@ -90,10 +90,7 @@ export class UserService {
         userName: UserInfoTable.userName,
         displayName: UserInfoTable.displayName,
         avatarURL: UserInfoTable.avatarURL,
-        status: UserInfoTable.status,
         inviteCode: UserInfoTable.inviteCode,
-        gender: UserInfoTable.gender,
-        birthDate: UserInfoTable.birthDate,
         selfIntroduction: UserInfoTable.selfIntroduction,
         updatedAt: UserInfoTable.updatedAt,
         createdAt: UserInfoTable.createdAt,
@@ -170,10 +167,7 @@ export class UserService {
           userName: info.userName,
           displayName: info.displayName,
           avatarURL: info.avatarURL,
-          status: info.status,
           inviteCode: info.inviteCode,
-          gender: info.gender,
-          birthDate: info.birthDate,
           selfIntroduction: info.selfIntroduction,
           updatedAt: info.updatedAt,
           createdAt: info.createdAt,
@@ -187,48 +181,65 @@ export class UserService {
   /* ============================== Get Operations ============================== */
 
   /* ============================== Update Operations ============================== */
-  async updateInfoById(
+  async updateInfoByUserId(
     userId: string,
-    input: UpdateInfoInput,
+    accessTokenData: AccessTokenInterface,
+    input: UpdateUserInfoInput,
   ): Promise<AffectedPrivateUserInfo> {
-    const response = (await this.db
-      .update(UserInfoTable)
-      .set({
-        displayName: input.displayName,
-        status: input.status,
-        gender: input.gender,
-        birthDate: input.birthDate,
-        selfIntroduction: input.selfIntroduction,
-      })
-      .where(eq(UserInfoTable.userId, userId))
-      .returning({
-        userName: UserInfoTable.userName,
-        displayName: UserInfoTable.displayName,
-        inviteCode: UserInfoTable.inviteCode,
-        avatarURL: UserInfoTable.avatarURL,
-        status: UserInfoTable.status,
-        gender: UserInfoTable.gender,
-        birthDate: UserInfoTable.birthDate,
-        selfIntroduction: UserInfoTable.selfIntroduction,
-        updatedAt: UserInfoTable.updatedAt,
-        createdAt: UserInfoTable.createdAt,
-      })) as PrivateUserInfo[] | undefined;
+    return await this.db.transaction(async (tx) => {
+      const responseOfUpdatingUserInfo = (await tx
+        .update(UserInfoTable)
+        .set({
+          displayName: input.displayName,
+          status: input.status,
+          gender: input.gender,
+          birthDate: input.birthDate,
+          selfIntroduction: input.selfIntroduction,
+        })
+        .where(eq(UserInfoTable.userId, userId))
+        .returning({
+          userName: UserInfoTable.userName,
+          displayName: UserInfoTable.displayName,
+          inviteCode: UserInfoTable.inviteCode,
+          avatarURL: UserInfoTable.avatarURL,
+          status: UserInfoTable.status,
+          gender: UserInfoTable.gender,
+          birthDate: UserInfoTable.birthDate,
+          selfIntroduction: UserInfoTable.selfIntroduction,
+          updatedAt: UserInfoTable.updatedAt,
+          createdAt: UserInfoTable.createdAt,
+        })) as PrivateUserInfo[] | undefined;
 
-    if (!response || response.length !== 1) {
-      throw UserNotFoundException;
-    }
+      if (
+        !responseOfUpdatingUserInfo ||
+        responseOfUpdatingUserInfo.length !== 1
+      ) {
+        throw UserNotFoundException;
+      }
 
-    return {
-      userInfo: response[0],
-      totCount: Object.keys(input).length,
-      successCount: Object.keys(input).filter(
-        (key) => input[key] !== response[0][key],
-      ).length,
-    };
+      const responseOfUpdatingCache = await this.accessTokenCacheManager.update(
+        accessTokenData,
+        {
+          status: responseOfUpdatingUserInfo[0].status,
+        },
+      );
+      if (!responseOfUpdatingCache) {
+        tx.rollback();
+        throw CacheUpdateAccessTokenException;
+      }
+
+      return {
+        userInfo: responseOfUpdatingUserInfo[0],
+        totCount: Object.keys(input).length,
+        successCount: Object.keys(input).filter(
+          (key) => input[key] !== responseOfUpdatingUserInfo[0][key],
+        ).length,
+      };
+    });
   }
 
   // only used by controller
-  async updateAvatarById(
+  async updateAvatarByUserId(
     userId: string,
     userName: string,
     avatarFile: Express.Multer.File,
@@ -250,39 +261,10 @@ export class UserService {
       successCount: response.length,
     };
   }
-
-  async updateAccountById(
-    userId: string,
-    input: UpdateAccountInput,
-  ): Promise<AffectedCountModel> {
-    const response = (await this.db
-      .update(UserTable)
-      .set({
-        role: input.role,
-        plan: input.plan,
-      })
-      .where(eq(UserTable.id, userId))
-      .returning({
-        userName: UserTable.userName,
-        email: UserTable.email,
-        role: UserTable.role,
-        plan: UserTable.plan,
-        userAgent: UserTable.userAgent,
-      })) as UserAccount[] | undefined;
-
-    if (!response || response.length !== 1) {
-      throw UserNotFoundException;
-    }
-
-    return {
-      totCount: 1,
-      successCount: response.length,
-    };
-  }
   /* ============================== Update Operations ============================== */
 
   /* ============================== Delete Operations ============================== */
-  async deleteOneById(
+  async deleteOneByUserId(
     userId: string,
     input: DeleteAccountInput,
   ): Promise<AffectedCountModel> {

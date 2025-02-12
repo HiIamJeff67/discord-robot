@@ -10,7 +10,7 @@ import {
   ApiListAvatarFileException,
   ApiUploadAvatarFileException,
   MaxAvatarFileSizeException,
-  TypeMimeTypeInvalidException,
+  TypeInvalidMimeTypeException,
 } from '../exceptions';
 import { isMimeFileTypeIn, multerToFile } from '../utils';
 import { MimeType, ValidAvatarMimeTypes } from '../types';
@@ -37,7 +37,7 @@ export class SupabaseStorageService {
           ValidAvatarMimeTypes as MimeType[],
         )
       ) {
-        throw TypeMimeTypeInvalidException(
+        throw TypeInvalidMimeTypeException(
           uploadedFile.mimetype as MimeType,
           ValidAvatarMimeTypes as MimeType[],
         );

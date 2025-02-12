@@ -37,5 +37,7 @@ export interface ValidateTokenDataInterface {
   status: UserStatusType;
   role: UserRoleType; // re-generate the token while updating the role
   plan: UserPlanType; // re-generate the token while updating the plan
+  generalSettingsCode: number;
+  privacySettingsCode: number;
   accessTokenData: AccessTokenInterface;
 }

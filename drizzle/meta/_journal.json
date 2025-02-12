@@ -85,6 +85,13 @@
       "when": 1739257719516,
       "tag": "0011_talented_white_tiger",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1739365002269,
+      "tag": "0012_luxuriant_sasquatch",
+      "breakpoints": true
     }
   ]
 }

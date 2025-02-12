@@ -6,7 +6,7 @@ import {
   uuid,
 } from 'drizzle-orm/pg-core';
 import { UserTable } from './schema';
-import { UsersToUsersStatusEnum } from './enum.schema';
+import { UsersToUsersStatusPgEnum } from './enum.schema';
 import { relations } from 'drizzle-orm';
 
 export const UsersToUsersTable = pgTable(
@@ -20,7 +20,7 @@ export const UsersToUsersTable = pgTable(
       onDelete: 'cascade',
       onUpdate: 'cascade',
     }),
-    status: UsersToUsersStatusEnum('status').notNull(),
+    status: UsersToUsersStatusPgEnum('status').notNull(),
     updatedAt: timestamp('updatedAt')
       .notNull()
       .defaultNow()

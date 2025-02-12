@@ -12,9 +12,15 @@ import {
   AuthPasswordNotMatchException,
   UserNotFoundException,
   UserTokenNotFoundException,
+  CreateUserSettingException,
 } from '../exceptions';
 import { UserInfoTable } from '../drizzle/schema/userInfo.schema';
-import { addMinutes, isEmail } from '../utils';
+import {
+  addMinutes,
+  getDefaultLanguageFromAcceptLanguage,
+  getTimeZone,
+  isEmail,
+} from '../utils';
 import { UserAuthTable } from '../drizzle/schema/userAuth.schema';
 import { eq } from 'drizzle-orm';
 import { RefreshTokenPlaceholder } from '../constants';
@@ -22,8 +28,16 @@ import { AccessTokenCacheManager } from '../access-token-cache/access-token-cach
 import { CacheSetAccessTokenException } from '../exceptions/cache.exception';
 import { DefaultRegisterInput } from './dto/register.input';
 import { DefaultLoginInput } from './dto/login.input';
-import { UserPlanType, UserRoleType, UserStatusType } from '../types';
-import { SetAccessTokenCacheInterface } from '../interfaces';
+import {
+  LanguageType,
+  ThemeType,
+  TimeZoneType,
+  UserPlanType,
+  UserRoleType,
+  UserStatusType,
+} from '../types';
+import { UserSettingTable } from '../drizzle/schema/userSetting.schema';
+import { LanguageEnum } from '../enums';
 
 @Injectable()
 export class AuthService {
@@ -37,6 +51,7 @@ export class AuthService {
   async defaultRegister(
     input: DefaultRegisterInput,
     userAgent: string | undefined, // set by request
+    acceptLanguage: string | undefined, // set by request
   ) {
     return await this.db.transaction(async (tx) => {
       const hash = await bcrypt.hash(
@@ -104,6 +119,38 @@ export class AuthService {
         throw CreateUserAuthException;
       }
 
+      const defaultLanguage: LanguageType = acceptLanguage
+        ? getDefaultLanguageFromAcceptLanguage(acceptLanguage)
+        : LanguageEnum.English;
+      const responseOfCreatingUserSetting = (await tx
+        .insert(UserSettingTable)
+        .values({
+          userId: responseOfCreatingUser[0].id,
+          language: defaultLanguage,
+          timeZone: getTimeZone(new Date()),
+        })
+        .returning({
+          language: UserSettingTable.language,
+          timeZone: UserSettingTable.timeZone,
+          theme: UserSettingTable.theme,
+          generalSettingsCode: UserSettingTable.generalSettingsCode,
+          privacySettingsCode: UserSettingTable.privacySettingsCode,
+        })) as
+        | {
+            language: LanguageType;
+            timeZone: TimeZoneType;
+            theme: ThemeType;
+            generalSettingsCode: number;
+            privacySettingsCode: number;
+          }[]
+        | undefined;
+      if (
+        !responseOfCreatingUserSetting ||
+        responseOfCreatingUserSetting.length === 0
+      ) {
+        throw CreateUserSettingException;
+      }
+
       const accessTokenData =
         await this.secureGeneratorService.generateAccessToken({
           sub: responseOfCreatingUser[0].id,
@@ -124,9 +171,14 @@ export class AuthService {
         {
           ...responseOfCreatingUser[0],
           status: responseOfCreatingUserInfo[0].status as UserStatusType,
+          generalSettingsCode:
+            responseOfCreatingUserSetting[0].generalSettingsCode,
+          privacySettingsCode:
+            responseOfCreatingUserSetting[0].privacySettingsCode,
         },
       );
       if (!responseOfSettingCache) {
+        tx.rollback();
         throw CacheSetAccessTokenException;
       }
       const responseOfUpdatingUser = await tx
@@ -136,13 +188,16 @@ export class AuthService {
           userAgent: userAgent,
         })
         .returning();
-      if (!responseOfUpdatingUser || responseOfUpdatingUser.length === 0) {
+      if (!responseOfUpdatingUser || responseOfUpdatingUser.length !== 1) {
         throw UserNotFoundException;
       }
 
       return {
         accessTokenData: accessTokenData,
         refreshTokenData: refreshTokenData,
+        language: responseOfCreatingUserSetting[0].language,
+        timeZone: responseOfCreatingUserSetting[0].timeZone,
+        theme: responseOfCreatingUserSetting[0].theme,
       };
     });
   }
@@ -154,10 +209,15 @@ export class AuthService {
           id: UserTable.id,
           userName: UserTable.userName,
           email: UserTable.email,
+          userAgent: UserTable.userAgent,
           status: UserInfoTable.status,
           role: UserTable.role,
           plan: UserTable.plan,
-          userAgent: UserTable.userAgent,
+          language: UserSettingTable.language,
+          timeZone: UserSettingTable.timeZone,
+          theme: UserSettingTable.theme,
+          generalSettingsCode: UserSettingTable.generalSettingsCode,
+          privacySettingsCode: UserSettingTable.privacySettingsCode,
           password: UserTable.password,
         })
         .from(UserTable)
@@ -166,7 +226,11 @@ export class AuthService {
             ? eq(UserTable.email, input.account)
             : eq(UserTable.userName, input.account),
         )
-        .leftJoin(UserInfoTable, eq(UserInfoTable.userId, UserTable.id))) as {
+        .leftJoin(UserInfoTable, eq(UserInfoTable.userId, UserTable.id))
+        .leftJoin(
+          UserSettingTable,
+          eq(UserSettingTable.userId, UserTable.id),
+        )) as {
         id: string;
         userName: string;
         email: string;
@@ -174,9 +238,14 @@ export class AuthService {
         status: UserStatusType;
         role: UserRoleType;
         plan: UserPlanType;
+        language: LanguageType;
+        timeZone: TimeZoneType;
+        theme: ThemeType;
+        generalSettingsCode: number;
+        privacySettingsCode: number;
         password: string;
       }[];
-      if (!responseOfSelectingUser || responseOfSelectingUser.length === 0) {
+      if (!responseOfSelectingUser || responseOfSelectingUser.length !== 1) {
         throw UserNotFoundException;
       }
 
@@ -206,6 +275,7 @@ export class AuthService {
         responseOfSelectingUser[0],
       );
       if (!responseOfSettingCache) {
+        tx.rollback();
         throw CacheSetAccessTokenException;
       }
       const responseOfUpdatingUser = await tx
@@ -222,6 +292,9 @@ export class AuthService {
       return {
         accessTokenData: accessTokenData,
         refreshTokenData: refreshTokenData,
+        language: responseOfSelectingUser[0].language,
+        timeZone: responseOfSelectingUser[0].timeZone,
+        theme: responseOfSelectingUser[0].theme,
       };
     });
   }

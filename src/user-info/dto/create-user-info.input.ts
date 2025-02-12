@@ -15,7 +15,7 @@ import {
 import { UserGenderEnum, UserStatusEnum } from '../../enums';
 
 @InputType()
-export class CreateMyInfoInput {
+export class CreateUserInfoInput {
   @Field(() => String)
   @MinLength(MinDisplayNameLength)
   @MaxLength(MaxDisplayNameLength)

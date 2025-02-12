@@ -50,18 +50,6 @@ export class PublicUserInfo {
   @IsUrl()
   avatarURL?: string | null;
 
-  @Field(() => UserStatusEnum)
-  @IsIn(UserStatusValues)
-  status: UserStatusType;
-
-  @Field(() => UserGenderEnum)
-  @IsIn(UserStatusValues)
-  gender: UserGenderType;
-
-  @Field(() => GraphQLISODateTime, { nullable: true })
-  @IsDate()
-  birthDate: Date | null;
-
   @Field(() => String, { nullable: true })
   @MinLength(MinSelfIntroductionLength)
   @MaxLength(MaxSelfIntroductionLength)

@@ -1,5 +1,6 @@
 import { relations } from 'drizzle-orm';
 import {
+  boolean,
   pgTable,
   text,
   timestamp,
@@ -11,15 +12,17 @@ import { UserTable } from './user.schema';
 export const UserAuthTable = pgTable(
   'userAuth',
   {
-    id: uuid('id').primaryKey().defaultRandom(),
     userId: uuid('userId')
+      .primaryKey()
       .references(() => UserTable.id, {
         onDelete: 'cascade',
-      })
-      .unique()
-      .notNull(),
+        onUpdate: 'cascade',
+      }),
     authCode: text('authCode').notNull(),
     authCodeExpiredAt: timestamp('authCodeExpiredAt').notNull(),
+    isEmailAuthenticated: boolean('isEmailAuthenticated')
+      .notNull()
+      .default(false),
     phoneNumber: text('phoneNumber').unique(),
     discordId: text('discordId').unique(),
     googleId: text('googleId').unique(),

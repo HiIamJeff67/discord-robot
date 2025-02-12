@@ -25,6 +25,14 @@ type AffectedPrivateUserInfoOutput {
   userInfo: PrivateUserInfo!
 }
 
+type AffectedUserSettingOutput {
+  accessToken: String!
+  expiresIn: String!
+  successCount: Int!
+  totCount: Int!
+  userSetting: UserSetting!
+}
+
 input CreateNotificationInput {
   content: String!
   linkId: String
@@ -46,6 +54,9 @@ input DefaultLoginInput {
 type DefaultLoginOutput {
   accessToken: String!
   expiresIn: String!
+  language: LanguageEnum!
+  theme: ThemeEnum!
+  timeZone: TimeZoneEnum!
 }
 
 input DefaultRegisterInput {
@@ -58,6 +69,9 @@ input DefaultRegisterInput {
 type DefaultRegisterOutput {
   accessToken: String!
   expiresIn: String!
+  language: LanguageEnum!
+  theme: ThemeEnum!
+  timeZone: TimeZoneEnum!
 }
 
 input DeleteAccountInput {
@@ -93,6 +107,13 @@ input GetRelativeUserInfosInput {
   totCount: Int
 }
 
+enum LanguageEnum {
+  English
+  Japanese
+  SimplifiedChinese
+  TraditionalChinese
+}
+
 type Mutation {
   createNofications(input: CreateNotificationInput!): AffectedNotificationsOutput!
   defaultLogin(input: DefaultLoginInput!): DefaultLoginOutput!
@@ -100,8 +121,9 @@ type Mutation {
   deleteMyAccount(input: DeleteAccountInput!): AffectedCountOutput!
   deleteMyNotifications(input: DeleteNotificationInput!): AffectedCountOutput!
   updateMyAccount(input: UpdateAccountInput!): AffectedCountOutput!
-  updateMyInfo(input: UpdateInfoInput!): AffectedPrivateUserInfoOutput!
+  updateMyInfo(input: UpdateUserInfoInput!): AffectedPrivateUserInfoOutput!
   updateMyNotifications(input: UpdateNotificationInput!): AffectedCountOutput!
+  updateMySetting(input: UpdateUserSettingInput!): AffectedUserSettingOutput!
 }
 
 type Notification {
@@ -188,13 +210,10 @@ type PrivateUserInfoOutput {
 
 type PublicUserInfo {
   avatarURL: String
-  birthDate: DateTime
   createdAt: DateTime!
   displayName: String!
-  gender: UserGenderEnum!
   inviteCode: Int!
   selfIntroduction: String
-  status: UserStatusEnum!
   updatedAt: DateTime!
   userName: String!
 }
@@ -207,24 +226,22 @@ type PublicUserInfoEdge {
 type PublicUserInfoOutput {
   accessToken: String!
   avatarURL: String
-  birthDate: DateTime
   createdAt: DateTime!
   displayName: String!
   expiresIn: String!
-  gender: UserGenderEnum!
   inviteCode: Int!
   selfIntroduction: String
-  status: UserStatusEnum!
   updatedAt: DateTime!
   userName: String!
 }
 
 type Query {
-  findMyAccount: UserAccountOutput!
+  getMyAccount: UserAccountOutput!
   getMyAuth: UserAuth!
   getMyInfo: PrivateUserInfoOutput!
   getMyNotification(input: GetNotificationInput!): NotificationOutput!
   getMyNotifications(input: GetNotificationsInput!): PaginatedNotificationsOutput!
+  getMySetting: UserSettingOutput!
   getUserInfo(userName: String!): PublicUserInfoOutput!
   getUserInfos(input: GetRelativeUserInfosInput!): PaginatedPublicUserInfosOutput!
 }
@@ -246,12 +263,52 @@ input SortOptions {
   byUpdatedAt: SearchOrderEnum! = Descending
 }
 
+enum ThemeEnum {
+  Dark
+  Light
+  System
+}
+
+enum TimeZoneEnum {
+  UTC_MINUS_01
+  UTC_MINUS_02
+  UTC_MINUS_03
+  UTC_MINUS_04
+  UTC_MINUS_05
+  UTC_MINUS_06
+  UTC_MINUS_07
+  UTC_MINUS_08
+  UTC_MINUS_09
+  UTC_MINUS_10
+  UTC_MINUS_11
+  UTC_MINUS_12
+  UTC_PLUS_01
+  UTC_PLUS_02
+  UTC_PLUS_03
+  UTC_PLUS_04
+  UTC_PLUS_05
+  UTC_PLUS_06
+  UTC_PLUS_07
+  UTC_PLUS_08
+  UTC_PLUS_09
+  UTC_PLUS_10
+  UTC_PLUS_11
+  UTC_PLUS_12
+  UTC_PLUS_13
+  UTC_PLUS_14
+  UTC_ZERO
+}
+
 input UpdateAccountInput {
   plan: UserPlanEnum!
   role: UserRoleEnum!
 }
 
-input UpdateInfoInput {
+input UpdateNotificationInput {
+  notificationIds: [String!]!
+}
+
+input UpdateUserInfoInput {
   birthDate: DateTime
   displayName: String
   gender: UserGenderEnum
@@ -259,8 +316,12 @@ input UpdateInfoInput {
   status: UserStatusEnum
 }
 
-input UpdateNotificationInput {
-  notificationIds: [String!]!
+input UpdateUserSettingInput {
+  generalSettingsCode: Int
+  language: LanguageEnum
+  privacySettingsCode: Int
+  theme: ThemeEnum
+  timeZone: TimeZoneEnum
 }
 
 type UserAccountOutput {
@@ -306,6 +367,24 @@ enum UserRoleEnum {
   Developer
   GammaExplorer
   NonCertified
+}
+
+type UserSetting {
+  generalSettingsCode: Int!
+  language: LanguageEnum!
+  privacySettingsCode: Int!
+  theme: ThemeEnum!
+  timeZone: TimeZoneEnum!
+}
+
+type UserSettingOutput {
+  accessToken: String!
+  expiresIn: String!
+  generalSettingsCode: Int!
+  language: LanguageEnum!
+  privacySettingsCode: Int!
+  theme: ThemeEnum!
+  timeZone: TimeZoneEnum!
 }
 
 enum UserStatusEnum {

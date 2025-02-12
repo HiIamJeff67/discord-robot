@@ -15,12 +15,17 @@ export const CreateUserAuthException = new ForbiddenException({
   message: 'Failed to create the user auth',
 });
 
-export const CreateNotificationException = new ForbiddenException({
+export const CreateUserSettingException = new ForbiddenException({
   case: 'E-Create-004',
+  message: 'Failed to create the user setting',
+});
+
+export const CreateNotificationException = new ForbiddenException({
+  case: 'E-Create-005',
   message: 'Failed to create the notification',
 });
 
 export const CreateUsersToNotificationException = new ForbiddenException({
-  case: 'E-Create-005',
+  case: 'E-Create-006',
   message: 'Failed to create the link from users to notification',
 });

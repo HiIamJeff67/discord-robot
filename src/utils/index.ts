@@ -7,3 +7,5 @@ export * from './dateCalculator';
 export * from './multerToFile';
 export * from './fileTypeValidator';
 export * from './getSubscriptionChannelName';
+export * from './dataCodeParser';
+export * from './getDefaultLanguage';

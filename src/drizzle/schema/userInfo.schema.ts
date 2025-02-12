@@ -8,8 +8,9 @@ import {
   uuid,
 } from 'drizzle-orm/pg-core';
 import { UserTable } from './user.schema';
-import { UserGenderEnum, UserStatusEnum } from './enum.schema';
+import { UserGenderPgEnum, UserStatusPgEnum } from './enum.schema';
 import { relations } from 'drizzle-orm';
+import { UserGenderEnum, UserStatusEnum } from '../../enums';
 
 export const UserInfoTable = pgTable(
   'userInfo',
@@ -31,8 +32,12 @@ export const UserInfoTable = pgTable(
     displayName: text('displayName').notNull(),
     inviteCode: serial('inviteCode').notNull().unique(),
     avatarURL: text('avatarURL'),
-    status: UserStatusEnum('status').notNull().default('Online'),
-    gender: UserGenderEnum('gender').notNull().default('PreferNotToSay'),
+    status: UserGenderPgEnum('status')
+      .notNull()
+      .default(UserStatusEnum.Offline),
+    gender: UserStatusPgEnum('gender')
+      .notNull()
+      .default(UserGenderEnum.PreferNotToSay),
     birthDate: timestamp('birthDate'),
     selfIntroduction: text('selfIntroduction'),
     updatedAt: timestamp('updatedAt')

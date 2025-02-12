@@ -6,7 +6,7 @@ import {
   timestamp,
   uuid,
 } from 'drizzle-orm/pg-core';
-import { NotificationTypeEnum } from './enum.schema';
+import { NotificationTypePgEnum } from './enum.schema';
 import { relations } from 'drizzle-orm';
 import { UsersToNotificationsTable } from './usersToNotifications.schema';
 
@@ -16,7 +16,7 @@ export const NotificationTable = pgTable(
     id: uuid('id').primaryKey().defaultRandom(),
     title: text('title').notNull(),
     content: text('content').notNull(),
-    type: NotificationTypeEnum('type'),
+    type: NotificationTypePgEnum('type'),
     linkId: text('linkId'),
     updatedAt: timestamp('updatedAt')
       .notNull()

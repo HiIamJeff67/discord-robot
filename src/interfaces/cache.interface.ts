@@ -8,4 +8,6 @@ export interface SetAccessTokenCacheInterface {
   status: UserStatusType;
   role: UserRoleType;
   plan: UserPlanType;
+  generalSettingsCode: number;
+  privacySettingsCode: number;
 }

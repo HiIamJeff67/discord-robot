@@ -1,5 +1,4 @@
-import { Field, InputType, PartialType } from '@nestjs/graphql';
-import { CreateMyInfoInput } from './create-user.input';
+import { Field, InputType } from '@nestjs/graphql';
 import { UserPlanEnum, UserRoleEnum } from '../../enums';
 import { IsIn } from 'class-validator';
 import {
@@ -8,9 +7,6 @@ import {
   UserRoleType,
   UserRoleValues,
 } from '../../types';
-
-@InputType()
-export class UpdateInfoInput extends PartialType(CreateMyInfoInput) {}
 
 @InputType()
 export class UpdateAccountInput {

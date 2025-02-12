@@ -12,11 +12,13 @@ import { join } from 'path';
 import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter';
 import { AccessTokenCacheModule } from './access-token-cache/access-token-cache.module';
 import { AuthModule } from './auth/auth.module';
-import { UserModule } from './user/user.module';
+import { UserInfoModule } from './user-info/user-info.module';
 import { SupabaseModule } from './supabase/supabase.module';
 import { UsersToUsersModule } from './users-to-users/users-to-users.module';
 import { NotificationModule } from './notification/notification.module';
 import { UserAuthModule } from './user-auth/user-auth.module';
+import { UserAccountModule } from './user-account/user-account.module';
+import { UserSettingModule } from './user-setting/user-setting.module';
 
 @Module({
   imports: [
@@ -56,11 +58,13 @@ import { UserAuthModule } from './user-auth/user-auth.module';
     SecureGeneratorModule,
     AccessTokenCacheModule,
     AuthModule,
-    UserModule,
+    UserInfoModule,
     SupabaseModule,
     UsersToUsersModule,
     NotificationModule,
     UserAuthModule,
+    UserAccountModule,
+    UserSettingModule,
   ],
   controllers: [AppController],
   providers: [AppService],
